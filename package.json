@@ -1,0 +1,36 @@
+{
+  "name": "scoreboard",
+  "version": "1.0.0",
+  "description": "Floorball scoreboard",
+  "main": "index.js",
+  "dependencies": {
+    "angular-websocket": "^2.0.1",
+    "body-parser": "^1.15.2",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.14.0",
+    "jade": "^1.11.0",
+    "morgan": "^1.7.0",
+    "socket.io": "^1.7.2",
+    "static-favicon": "^2.0.0-alpha",
+    "stylus": "^0.54.5",
+    "websocket": "^1.0.24"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jarmokalevikuronen/scoreboard.git"
+  },
+  "keywords": [
+    "floorball",
+    "scoreboard"
+  ],
+  "author": "Jarmo K. Kuronen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jarmokalevikuronen/scoreboard/issues"
+  },
+  "homepage": "https://github.com/jarmokalevikuronen/scoreboard#readme"
+}

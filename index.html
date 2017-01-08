@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>WebSocket Echo Client</title>
+  <meta charset="UTF-8" />
+  <script src="bower_components/angular/angular.min.js"></script>
+  <script>
+    "use strict";
+    var socket = null;
+    
+    function updateStateText(game) {
+        if (state_text !== null && game !== null && game.state !== undefined) {
+            state_text.textContent = game.state
+        } else if (state_text !== undefined) {
+            state_text.textContent = "-";
+        }
+    }
+
+    function updateHomeGoals(game) {
+       if (home_goals !== undefined && home_goals !== null && game !== null && game.homegoals !== undefined) {
+           home_goals.innerHTML = game.homegoals
+       }
+    }
+
+    function updateVisitorGoals(game) {
+       if (visitor_goals !== undefined && visitor_goals !== null && game !== null && game.visitorgoals !== undefined) {
+           visitor_goals.innerHTML = game.visitorgoals
+       }
+    }
+
+    function updateState(game) {
+        var minsec_string = "";
+        minsec_string += "" + (game.periodelapsed_minutes).toString();
+        minsec_string += ":";
+        if (game.periodelapsed_seconds < 10) {
+            minsec_string += "0";
+        }
+        minsec_string += game.periodelapsed_seconds;
+
+        if (elapsed_time !== undefined) {
+            elapsed_time.innerHTML = minsec_string;
+        }
+
+        updateStateText(game);
+        updateHomeGoals(game);
+        updateVisitorGoals(game);
+
+for (var c=0; c<game.homepenalties.length; ++c) {
+    console.log("" + c + " " + game.homepenalties[c].remaining_minutes + ":" + game.homepenalties[c].remaining_seconds);
+}
+    }
+
+    function sendCommand(command) {
+       var obj = {};
+       obj["_cmd"] = command;
+       if (socket !== null) {
+            socket.send(JSON.stringify(obj));
+       }
+    }
+    // Initialize everything when the window finishes loading
+    window.addEventListener("load", function(event) {
+//      var status = document.getElementById("status");
+      var send = document.getElementById("send");
+      var text = document.getElementById("text");
+      var state_text = document.getElementById("state_text");
+      var home_goals = document.getElementById("home_goals");
+      var visitor_goals = document.getElementById("visitor_goals");
+
+      var message = document.getElementById("message");
+
+      var elapsed_time = document.getElementById("elapsed_time");
+
+      var uri = "ws://" + window.location.host + window.location.pathname
+
+      console.log("Reaching out URI: " + uri);
+       
+      socket = new WebSocket(uri, "scoreboard-protocol");
+      socket.addEventListener("open", function(event) {
+//          status.textContent = "Connected";
+	  console.log("Connected!!");
+      });
+
+      updateStateText(null);
+
+      socket.addEventListener("message", function(event) {
+          var object = JSON.parse(event.data);
+          var cmd = object["_cmd"];
+          var evt = object["_evt"];
+          var dat = object["_data"];
+
+          if (evt !== undefined && evt === "STATE" && dat !== undefined) {
+              updateState(dat);
+          } else {
+              var datex = dat !== undefined ? dat.toString() : "";
+              console.log("CMD=" + cmd + " EVT=" + evt + " DATA=" + datex);
+          }
+	//  message.textContent = "Server Says: " + event.data;
+      });
+
+      // Display any errors that occur
+      socket.addEventListener("error", function(event) {
+        message.textContent = "Error: " + event;
+      });
+
+      socket.addEventListener("close", function(event) {
+        open.disabled = false;
+        //status.textContent = "Not Connected";
+      });
+      
+      document.getElementById("start").addEventListener("click", function(event) { sendCommand("start"); });
+      document.getElementById("pause").addEventListener("click", function(event) { sendCommand("pause"); });
+      document.getElementById("resume").addEventListener("click", function(event) { sendCommand("resume"); });
+
+      // Send text to the server when the Send button is clicked
+      send.addEventListener("click", function(event) {
+//        socket.send(text.value);
+        sendCommand(text.value);
+        text.value = "";
+      });
+    });
+  </script>
+</head>
+<body>
+
+  Status: <span id="state_text"></span><br />
+  URL: <input id="url" /><br />
+  <input id="send" type="button" value="Send" />&nbsp;
+  <input id="start" type="button" value="Start" />&nbsp;
+  <input id="pause" type="button" value="Pause" />&nbsp;
+  <input id="resume" type="button" value="Resume" />&nbsp;
+  <input id="text" /><br />
+  <span id="message"></span>
+  <div id="elapsed_time"></div>
+  <div id="home_goals"></div>
+  <div id="visitor_goals"></div>
+</body>
+</html>
