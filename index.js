@@ -40,12 +40,13 @@ function GameDef() {
 
 function Penalty(minutes) {
     this.period_min = minutes;
-    this.remaining_ms = parseInt(minutes) * /*60 **/ 1000;
+    this.remaining_ms = parseInt(minutes) * 60 * 1000;
     this.old_remaining_minutes = -1;
     this.remaining_minutes = minutes;
     this.remaining_seconds = 0;
     this.old_remaining_seconds = -1;
     this.finished = false;
+    this.id = ++penaltycounter;
 }
 
 Penalty.prototype.forwardTime = function(ms) {
@@ -74,6 +75,7 @@ Penalty.prototype.forwardTime = function(ms) {
 var game = new Game();
 
 
+var penaltycounter = 0;
 
 var GAMESTATE_NOTSTARTED	=	"game_notstarted"
 var GAMESTATE_RUNNING		=	"game_running"
@@ -128,6 +130,24 @@ Game.prototype.addVisitorPenalty = function(mins)
 {
     var penalty = new Penalty(parseInt(mins));
     this.visitorpenalties.push(penalty);
+}
+
+Game.prototype.delHomePenalty = function(index)
+{
+    var idx = parseInt(index);
+    if (idx < 0 || idx > 4) {
+        return;
+    }
+    this.homepenalties.splice(idx, 1);
+}
+
+Game.prototype.delVisitorPenalty = function(index)
+{
+    var idx = parseInt(index);
+    if (idx < 0 || idx > 4) {
+        return;
+    }
+    this.visitorpenalties.splice(idx, 1);
 }
 
 Game.prototype.modHomeGoal = function(dif, cb) {
@@ -191,7 +211,7 @@ Game.prototype.forwardTime = function(milliseconds, cb) {
 
     for (var c=this.homepenalties.length-1; c>=0; --c) {
         if (this.homepenalties[c].forwardTime(milliseconds) === true) {
-            reportChanges = true;
+//            reportChanges = true;
         }
         if (this.homepenalties[c].finished === true) {
             reportChanges = true;
@@ -201,7 +221,7 @@ Game.prototype.forwardTime = function(milliseconds, cb) {
    
     for (var c=this.visitorpenalties.length-1; c>=0; --c) {
         if (this.visitorpenalties[c].forwardTime(milliseconds) === true) {
-            reportChanges = true;
+  //          reportChanges = true;
         }
         if (this.visitorpenalties[c].finished === true) {
             reportChanges = true;
@@ -336,11 +356,15 @@ wsServer.on('request', function(request) {
                 if (theGAME.transferState(GAMESTATE_NOTSTARTED, GAMESTATE_RUNNING) === true) {
                     timetracker.start();
                     sendStateToClients();
+                } else if (theGAME.transferState(GAMESTATE_PAUSED, GAMESTATE_RUNNING) === true) {
+                    timetracker.start();
+                    sendStateToClients();
                 }
             } else if (cmd === "pause") {
                 if (theGAME.transferState(GAMESTATE_RUNNING, GAMESTATE_PAUSED) === true) {
                     var elapsed = timetracker.elapsed();
                     theGAME.forwardTime(elapsed, sendStateToClients);
+                    sendStateToClients();
                 }
             } else if (cmd === "resume") {
                 if (theGAME.transferState(GAMESTATE_PAUSED, GAMESTATE_RUNNING) === true) {
@@ -348,13 +372,13 @@ wsServer.on('request', function(request) {
                     sendStateToClients();
                 }
             } else if (cmd === "incsec") {
-                if (theGAME.state === GAMESTATE_PAUSED) {
-                    theGAME.forwardTime(1000, sendStateToClients);
-                }
+                theGAME.forwardTime(1000, sendStateToClients);
             } else if (cmd === "decsec") {
-                if (theGAME.state === GAMESTATE_PAUSED) {
-                    theGAME.forwardTime(-1000, sendStateToClients);
-                }
+                theGAME.forwardTime(-1000, sendStateToClients);
+           } else if (cmd === "incmin") {
+                theGAME.forwardTime(60 * 1000, sendStateToClients);
+            } else if (cmd === "decmin") {
+                theGAME.forwardTime(60 * -1000, sendStateToClients);
             } else if (cmd === "inchome") {
                 theGAME.modHomeGoal(1, sendStateToClients);
             } else if (cmd === "dechome") {
@@ -365,12 +389,22 @@ wsServer.on('request', function(request) {
                 theGAME.modVisitorGoal(-1, sendStateToClients);
             } else if (cmd === "addhomepenalty2") {
                 theGAME.addHomePenalty(2);
-            } else if (cmd == "addhomepenalty5") {
+                sendStateToClients();
+            } else if (cmd === "addhomepenalty5") {
                 theGAME.addHomePenalty(5);
+                sendStateToClients();
             } else if (cmd === "addvisitorpenalty2") {
                 theGAME.addVisitorPenalty(2);
-            } else if (cmd == "addvisitorpenalty5") {
+                sendStateToClients();
+            } else if (cmd === "addvisitorpenalty5") {
                 theGAME.addVisitorPenalty(5);
+                sendStateToClients();
+            } else if (cmd === "delhomepenalty") {
+                theGAME.delHomePenalty(arg);
+                sendStateToClients();
+            } else if (cmd === "delvisitorpenalty") {
+                theGAME.delVisitorPenalty(arg);
+                sendStateToClients();
             }
         }
     });

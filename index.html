@@ -3,66 +3,128 @@
 <head>
   <title>WebSocket Echo Client</title>
   <meta charset="UTF-8" />
-  <script src="bower_components/angular/angular.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="style.css">
   <script>
     "use strict";
     var socket = null;
+
+    var execPAUSE = function() { sendCommand("pause"); };
+    var execSTART = function() { sendCommand("start"); };
     
+    function timestring(minutes, seconds) {
+        var str = minutes;
+        str += ":";
+        if (parseInt(seconds) < 10) {
+            str += "0";
+        }
+        str += seconds;
+        return str;
+    }
+
     function updateStateText(game) {
-        if (state_text !== null && game !== null && game.state !== undefined) {
-            state_text.textContent = game.state
-        } else if (state_text !== undefined) {
-            state_text.textContent = "-";
+
+        if (game === null || game.state === undefined) {
+            return;
+        }
+
+        var ss_button = document.getElementById("primary_button");
+        var time_text = document.getElementById("time");
+
+        if (time_text !== null) {
+            time_text.textContent = timestring(game.periodelapsed_minutes, game.periodelapsed_seconds);
+        }
+
+        switch (game.state) {
+            case "game_running":
+                if (ss_button !== null) {
+                    ss_button.textContent = "PAUSE";
+                    ss_button.className = "primary_button_text primary_button_base primary_button_running";
+                    ss_button.removeEventListener("click", execSTART);
+                    ss_button.addEventListener("click", execPAUSE);
+                }
+            break;
+
+            default:
+                if (ss_button !== null) {
+                    ss_button.textContent = "START";
+                    ss_button.removeEventListener("click", execPAUSE);
+                    ss_button.addEventListener("click", execSTART);
+                    ss_button.className = "primary_button_text primary_button_base primary_button_paused"
+                }
         }
     }
 
     function updateHomeGoals(game) {
-       if (home_goals !== undefined && home_goals !== null && game !== null && game.homegoals !== undefined) {
-           home_goals.innerHTML = game.homegoals
+       var elem = document.getElementById("homegoals");
+       if (elem !== null) {
+           elem.textContent = game.homegoals
        }
     }
 
     function updateVisitorGoals(game) {
-       if (visitor_goals !== undefined && visitor_goals !== null && game !== null && game.visitorgoals !== undefined) {
-           visitor_goals.innerHTML = game.visitorgoals
+       var elem = document.getElementById("visitorgoals");
+       if (elem !== null) {
+           elem.textContent = game.visitorgoals
+       }
+    }
+
+    function bindButtonToCommand(button, command, arg) {
+        var object = document.getElementById(button);
+        if (object !== null) {
+            if (arg !== undefined) {
+                object.addEventListener("click", function() { sendCommand(command, arg); });
+            } else {
+                object.addEventListener("click", function() { sendCommand(command); });
+            }
+        }
+    }
+
+    function updatePenalties(game) {
+       for (var c=0; c<5; ++c) {
+           var homeElem = document.getElementById("penalty_home_" + c);
+           var visitorElem = document.getElementById("penalty_visitor_" + c);
+    
+           if (homeElem !== null) {
+               var data = "";
+               if (game.homepenalties.length > c) {
+                   data = timestring(game.homepenalties[c].remaining_minutes, game.homepenalties[c].remaining_seconds);
+               }
+               homeElem.textContent = data;
+           }
+
+           if (visitorElem !== null) {
+               var data = "";
+               if (game.visitorpenalties.length > c) {
+                   data = timestring(game.visitorpenalties[c].remaining_minutes, game.visitorpenalties[c].remaining_seconds);
+               }
+               visitorElem.textContent = data;
+           }
        }
     }
 
     function updateState(game) {
-        var minsec_string = "";
-        minsec_string += "" + (game.periodelapsed_minutes).toString();
-        minsec_string += ":";
-        if (game.periodelapsed_seconds < 10) {
-            minsec_string += "0";
-        }
-        minsec_string += game.periodelapsed_seconds;
-
-        if (elapsed_time !== undefined) {
-            elapsed_time.innerHTML = minsec_string;
-        }
-
         updateStateText(game);
         updateHomeGoals(game);
         updateVisitorGoals(game);
-
-for (var c=0; c<game.homepenalties.length; ++c) {
-    console.log("" + c + " " + game.homepenalties[c].remaining_minutes + ":" + game.homepenalties[c].remaining_seconds);
-}
+        updatePenalties(game);
     }
 
-    function sendCommand(command) {
+    function sendCommand(command, arg) {
        var obj = {};
        obj["_cmd"] = command;
+       if (arg !== undefined) {
+           obj["_arg"] = arg;
+       }
        if (socket !== null) {
             socket.send(JSON.stringify(obj));
        }
     }
     // Initialize everything when the window finishes loading
     window.addEventListener("load", function(event) {
-//      var status = document.getElementById("status");
+
       var send = document.getElementById("send");
       var text = document.getElementById("text");
-      var state_text = document.getElementById("state_text");
+
       var home_goals = document.getElementById("home_goals");
       var visitor_goals = document.getElementById("visitor_goals");
 
@@ -76,7 +138,6 @@ for (var c=0; c<game.homepenalties.length; ++c) {
        
       socket = new WebSocket(uri, "scoreboard-protocol");
       socket.addEventListener("open", function(event) {
-//          status.textContent = "Connected";
 	  console.log("Connected!!");
       });
 
@@ -107,9 +168,21 @@ for (var c=0; c<game.homepenalties.length; ++c) {
         //status.textContent = "Not Connected";
       });
       
-      document.getElementById("start").addEventListener("click", function(event) { sendCommand("start"); });
-      document.getElementById("pause").addEventListener("click", function(event) { sendCommand("pause"); });
-      document.getElementById("resume").addEventListener("click", function(event) { sendCommand("resume"); });
+      bindButtonToCommand("start", "start");
+      bindButtonToCommand("pause", "pause");
+      bindButtonToCommand("resume", "resume");
+      bindButtonToCommand("homegoalinc", "inchome");
+      bindButtonToCommand("homegoaldec", "dechome");
+      bindButtonToCommand("visitorgoalinc", "incvisitor");
+      bindButtonToCommand("visitorgoaldec", "decvisitor");
+      bindButtonToCommand("home2min", "addhomepenalty2");
+      bindButtonToCommand("home5min", "addhomepenalty5");
+      bindButtonToCommand("visitor2min", "addvisitorpenalty2");
+      bindButtonToCommand("visitor5min", "addvisitorpenalty5");
+      bindButtonToCommand("incsec", "incsec");
+      bindButtonToCommand("decsec", "decsec");
+      bindButtonToCommand("incmin", "incmin");
+      bindButtonToCommand("decmin", "decmin");
 
       // Send text to the server when the Send button is clicked
       send.addEventListener("click", function(event) {
@@ -122,16 +195,131 @@ for (var c=0; c<game.homepenalties.length; ++c) {
 </head>
 <body>
 
-  Status: <span id="state_text"></span><br />
-  URL: <input id="url" /><br />
+  <div id="title_home" class="title left">KOTI</div>
+  <div id="title_visitor" class="title right">VIERAS</div>
+  
+  <div style="height: 100px; width: 1px"></div>
+
+  <center>
+     <div id="title_period" class="title">2. ERÄTAUKO</div>
+  </center>
+
+  <div style="height: 20px; width: 1px"></div>
+
+<!--
   <input id="send" type="button" value="Send" />&nbsp;
   <input id="start" type="button" value="Start" />&nbsp;
   <input id="pause" type="button" value="Pause" />&nbsp;
   <input id="resume" type="button" value="Resume" />&nbsp;
-  <input id="text" /><br />
-  <span id="message"></span>
-  <div id="elapsed_time"></div>
-  <div id="home_goals"></div>
-  <div id="visitor_goals"></div>
+  <input id="homegoalinc" type="button" value="H-Goal+" />&nbsp;
+  <input id="homegoaldec" type="button" value="H-Goal-" />&nbsp;
+  <input id="visitorgoalinc" type="button" value="V-Goal+" />&nbsp;
+  <input id="visitorgoaldec" type="button" value="V-Goal-" />&nbsp;
+  <input id="home2min" type="button" value="H-2min" />&nbsp;
+  <input id="home5min" type="button" value="H-5min" />&nbsp;
+  <input id="visitor2min" type="button" value="V-2min" />&nbsp;
+  <input id="visitor5min" type="button" value="V-5min" />&nbsp;
+  <input id="incsec" type="button" value="+Sec" />&nbsp;
+  <input id="decsec" type="button" value="-Sec" />&nbsp;
+  <input id="incmin" type="button" value="+Min" />&nbsp;
+  <input id="decmin" type="button" value="-Min" />&nbsp;
+-->
+    <div id="goal_container">
+      <div id="homegoalcontrol" style="float: left; margin: 10px;">
+         <button type="button" class="plus_button" onclick="sendCommand('inchome');">+</button>
+         <button type="button" class="minus_button" onclick="sendCommand('dechome');">-</button>
+      </div>
+      <div id="homegoals" class="left_text text_goals">-</div>
+      <div id="visitorgoalcontrol"  style="float: right; margin: 10px;">
+         <button type="button" class="plus_button" onclick="sendCommand('incvisitor');">+</button>
+         <button type="button" class="minus_button" onclick="sendCommand('decvisitor');">-</button>
+      </div>
+      <div id="visitorgoals" class="right_text text_goals">-</div>
+    </div>
+
+  <center>
+
+    <div id="timecontainer" class="horcenter_block_50percent">
+        <div id="time" class="horcenter_text text_time">00:00</div> 
+        <div id="minute_control_container" style="float: left;">
+          <button type="button" class="plus_button_wide" onclick="sendCommand('incmin');">+Min</button>
+          <button type="button" class="minus_button_wide" onclick="sendCommand('decmin');">-Min</button>
+        </div>
+        <div id="second_control_container" style="float: right;">
+          <button type="button" class="plus_button_wide" onclick="sendCommand('incsec');">+Sec</button>
+          <button type="button" class="minus_button_wide" onclick="sendCommand('decsec');">-Sec</button>
+        </div>
+    </div>
+
+
+    <button type="button" id="primary_button"/>
+
+  </center>
+  
+  <div style="width: 1px; height: 50px;"></div>
+
+  <button type="button" class="plus_button_extrawide left" onclick="sendCommand('addhomepenalty2');">2 MIN</button>
+  <button type="button" class="plus_button_extrawide left" onclick="sendCommand('addhomepenalty5');">5 MIN</button>
+  <button type="button" class="plus_button_extrawide right" onclick="sendCommand('addvisitorpenalty5');">5 MIN</button>
+  <button type="button" class="plus_button_extrawide right" onclick="sendCommand('addvisitorpenalty2');">2 MIN</button>
+
+  <div style="width: 1px; height: 20px;"></div>
+
+  <table id="penalty_table" style="width: 100%">
+    <tr style="height: 80px">
+      <td style="width: 100px;">
+        <button type="button" class="minus_button left" onclick="sendCommand('delhomepenalty', 0);">-</button>
+      </td>
+      <td id="penalty_home_0" class="penalty_text left" ></td>
+      <td id="penalty_visitor_0" class="penalty_text right"></td>
+      <td style="width: 100px;">
+        <button type="button" class="minus_button right" onclick="sendCommand('delvisitorpenalty', 0);">-</button>
+      </td>
+    </tr>
+    <tr style="height: 80px">
+      <td style="width: 100px;">
+        <button type="button" class="minus_button left" onclick="sendCommand('delhomepenalty', 1);">-</button>
+      </td>
+      <td id="penalty_home_1" class="penalty_text left"></td>
+      <td id="penalty_visitor_1" class="penalty_text right"></td>
+      <td style="width: 100px;">
+        <button type="button" class="minus_button right" onclick="sendCommand('delvisitorpenalty', 1);">-</button>
+      </td>
+    </tr>
+    <tr style="height: 80px">
+      <td style="width: 100px;">
+        <button type="button" class="minus_button left" onclick="sendCommand('delhomepenalty', 2);">-</button>
+      </td>
+      <td id="penalty_home_2" class="penalty_text left"></td>
+      <td id="penalty_visitor_2" class="penalty_text right"></td>
+      <td style="width: 100px;">
+        <button type="button" class="minus_button right" onclick="sendCommand('delvisitorpenalty', 2);">-</button>
+      </td>
+    </tr>
+    <tr style="height: 80px">
+      <td style="width: 100px;">
+        <button type="button" class="minus_button left" onclick="sendCommand('delhomepenalty', 3);">-</button>
+      </td>
+      <td id="penalty_home_3" class="penalty_text left"></td>
+      <td id="penalty_visitor_3" class="penalty_text right"></td>
+      <td style="width: 100px;">
+        <button type="button" class="minus_button right" onclick="sendCommand('delvisitorpenalty', 3);">-</button>
+      </td>
+    </tr>
+    <tr style="height: 80px">
+      <td style="width: 100px;">
+        <button type="button" class="minus_button left" onclick="sendCommand('delhomepenalty', 4);">-</button>
+      </td>
+      <td id="penalty_home_4" class="penalty_text left"></td>
+      <td id="penalty_visitor_4" class="penalty_text right"></td>
+      <td style="width: 100px;">
+        <button type="button" class="minus_button right" onclick="sendCommand('delvisitorpenalty', 4);">-</button>
+      </td>
+    </tr>
+  </table>
+
+  <button type="button" class="plus_button_superwide left" onclick="sendCommand('hometimeout');">AIKALISÄ</button>
+  <button type="button" class="plus_button_superwide right" onclick="sendCommand('visitortimeout');">AIKALISÄ</button>
+
 </body>
 </html>

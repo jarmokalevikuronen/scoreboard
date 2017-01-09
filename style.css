@@ -1,0 +1,136 @@
+
+.title {
+    font-size: 100px;
+    color: black;
+}
+
+.goal_container {
+  width: 80%;
+  padding: 10px 0;
+  position: relative;
+  text-align: center;
+  white-space: no-wrap;
+  overflow: hidden;
+}
+
+.right_text {
+    text-align: right;
+    float: right;
+    overflow: hidden;
+}
+
+.left_text {
+    text-align: left;
+    float: left;
+    overflow: hidden;
+}
+
+.text_time {
+   font-size: 280px
+}
+
+.text_goals {
+   font-size: 200px
+}
+
+.horcenter_block_50percent {
+   margin: auto;
+   width: 50%;
+}
+
+.horcenter_text {
+    text-align: center;
+    border: 3px;   
+}
+
+.penalty_text {
+    text-align: center;
+    font-size: 64px;
+}
+
+.primary_button_text {
+   font-size: 150px
+}
+
+.primary_button_base {
+    width: 550px;
+    height: 250px;
+}
+
+.primary_button_running {
+    color: white;
+    background-color: green;
+}
+
+.primary_button_paused {
+    color: white;
+    background-color: red;
+}
+
+.left {
+    float: left;
+}
+
+.right {
+     float: right;
+}
+
+
+.center {
+     float: center;
+}
+
+.plus_button {
+    text-align: center;
+    font-size: 40px;
+    color: white;
+    background-color: green;
+    width: 50px;
+    height: 50px;
+}
+
+.minus_button {
+    text-align: center;
+    font-size: 40px;
+    color: white;
+    background-color: red;
+    width: 50px;
+    height: 50px;
+}
+
+.plus_button_wide {
+    text-align: center;
+    font-size: 40px;
+    color: white;
+    background-color: green;
+    width: 100px;
+    height: 50px;
+}
+
+.plus_button_extrawide {
+    text-align: center;
+    font-size: 40px;
+    color: white;
+    background-color: green;
+    width: 160px;
+    height: 50px;
+}
+
+.plus_button_superwide {
+    text-align: center;
+    font-size: 40px;
+    color: white;
+    background-color: green;
+    width: 220px;
+    height: 50px;
+}
+
+.minus_button_wide {
+    text-align: center;
+    font-size: 40px;
+    color: white;
+    background-color: red;
+    width: 100px;
+    height: 50px;
+}
+
