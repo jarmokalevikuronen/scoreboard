@@ -1,7 +1,19 @@
 
+.hide {
+    display: none;
+}
+
 .title {
-    font-size: 100px;
+    font-size: 6em;
     color: black;
+}
+
+.titlephase {
+    font-size: 4em;
+    text-align: center;
+    color: black;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .goal_container {
@@ -26,11 +38,11 @@
 }
 
 .text_time {
-   font-size: 280px
+   font-size: 14em;
 }
 
 .text_goals {
-   font-size: 200px
+   font-size: 16em;
 }
 
 .horcenter_block_50percent {
@@ -45,11 +57,11 @@
 
 .penalty_text {
     text-align: center;
-    font-size: 64px;
+    font-size: 4em;
 }
 
 .primary_button_text {
-   font-size: 150px
+   font-size: 9em;
 }
 
 .primary_button_base {

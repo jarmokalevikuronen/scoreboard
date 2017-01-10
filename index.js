@@ -29,14 +29,34 @@ TimeTrack.prototype.elapsedAndStart = function() {
 }
 
 
-function GameDef() {
+function GameDef_C1SM() {
     this.periods = 3;
-    this.period_length_min = 15;
-    this.break_length_min = 3;
+    this.period_length_minutes = 20;
+    this.intermission_length_minutes = 12;
+    this.timeout_length_sec = 30;
+    this.overtime_enabled = true;
+    this.overtime_length_minutes = 5;
+}
+
+
+function GameDef_EJUN() {
+    this.periods = 3;
+    this.period_length_minutes = 15;
+    this.intermission_length_minutes = 3;
     this.timeout_length_sec = 30;
     this.overtime_enabled = false;
-    this.overtime_length_min = 5;
+    this.overtime_length_minutes = 0;
 }
+
+function GameDef_TEST() {
+    this.periods = 3;
+    this.period_length_minutes = 2;
+    this.intermission_length_minutes = 1;
+    this.timeout_length_sec = 30;
+    this.overtime_enabled = true;
+    this.overtime_length_minutes = 5;
+}
+
 
 function Penalty(minutes) {
     this.period_min = minutes;
@@ -72,31 +92,52 @@ Penalty.prototype.forwardTime = function(ms) {
 }
 
 
-var game = new Game();
+var game = new Game(new GameDef_C1SM());
 
 
 var penaltycounter = 0;
 
-var GAMESTATE_NOTSTARTED	=	"game_notstarted"
-var GAMESTATE_RUNNING		=	"game_running"
-var GAMESTATE_PAUSED		=	"game_paused"
-var GAMESTATE_INTERMISSION	=	"game_intermission"
-var GAMESTATE_OVERTIME		=	"game_overtime"
-var GAMESTATE_TIMEOUT_HOME	=	"game_timeout_home"
-var GAMESTATE_TIMEOUT_VISITOR	=	"game_timeout_visitor"
+var GAMESTATE_NOTSTARTED	=	"PELI EI OLE ALKANUT"
+var GAMESTATE_PERIOD_1		=	"1. ERÄ"
+var GAMESTATE_INTERMISSION_1	=	"1. ERÄTAUKO"
+var GAMESTATE_PERIOD_2		=	"2. ERÄ"
+var GAMESTATE_INTERMISSION_2	=	"2. ERÄTAUKO"
+var GAMESTATE_PERIOD_3		=	"3. ERÄ"
+var GAMESTATE_OVERTIME		=	"JATKOAIKA"
+var GAMESTATE_FINISHED		=	"PELI PÄÄTTYNYT"
+var GAMESTATE_TIMEOUT_VISITOR	=	"AIKALISÄ VIERAS"
+var GAMESTATE_TIMEOUT_HOME	=	"AIKALISÄ KOTI"
 
-function Game() {
-    this.def = new GameDef();
-    this.old_periodelapsed_minutes = -1;
-    this.old_periodelapsed_seconds = -1;
+
+function Game(def) {
+    this.def = def;
     this.current_period = 1;
     this.state = GAMESTATE_NOTSTARTED;
+    this.returnstate = ""; // Return to this state for example after timeout has finished. woohaa.
     this.homegoals = 0;
+    this.running = false;
     this.visitorgoals = 0;
+
+    this.periodlength_ms = this.def.period_length_minutes * 60 * 1000;
+
+    this.periodelapsed_ms = 0;
     this.periodelapsed_minutes = 0;
     this.periodelapsed_seconds = 0;
-    this.periodelapsed_ms = 0;
-    this.periodlength_ms = this.def.period_length_mins * 60 * 1000;
+    this.old_periodelapsed_minutes = -1;
+    this.old_periodelapsed_seconds = -1;
+
+    this.intermission_remaining_ms = 0;
+    this.intermission_remaining_minutes = 0;
+    this.intermission_remaining_seconds = 0;
+    this.old_intermission_remaining_minutes = 0;
+    this.old_intermission_remaining_seconds = 0;
+
+    this.timeout_remaining_ms = 0;
+    this.timeout_remaining_minutes = 0;
+    this.timeout_remaining_seconds = 0;
+    this.old_timeout_remaining_minutes = 0;
+    this.old_timeout_remaining_seconds = 0;
+
     this.homepenalties = [];
     this.visitorpenalties = [];
 }
@@ -120,16 +161,37 @@ Game.prototype.transferState = function(oldstate, newstate) {
     return false;
 }
 
+Game.prototype.canAddPenalty = function() {
+    if (this.running === true) {
+        myLOG("cannot add penalty while running");
+        return false;
+    }
+    
+    switch (this.state) {
+        case GAMESTATE_TIMEOUT_HOME:
+        case GAMESTATE_TIMEOUT_VISITOR:
+            myLOG("cannot add penalty at state: " + this.state);
+            return false;
+        break;
+    }
+
+    return true;
+}
+
 Game.prototype.addHomePenalty = function(mins)
 {
-    var penalty = new Penalty(parseInt(mins));
-    this.homepenalties.push(penalty);
+    if (this.canAddPenalty() === true) {
+        var penalty = new Penalty(parseInt(mins));
+        this.homepenalties.push(penalty);
+    }
 }
 
 Game.prototype.addVisitorPenalty = function(mins)
 {
-    var penalty = new Penalty(parseInt(mins));
-    this.visitorpenalties.push(penalty);
+    if (this.canAddPenalty() === true) {
+        var penalty = new Penalty(parseInt(mins));
+        this.visitorpenalties.push(penalty);
+    }
 }
 
 Game.prototype.delHomePenalty = function(index)
@@ -180,21 +242,72 @@ Game.prototype.modVisitorGoal = function(dif, cb) {
     }
 }
 
-Game.prototype.startPeriod = function(period) {
-    this.current_period = parseInt(period);
-    
-    this.state = GAMESTATE_RUNNING;
+Game.prototype.finishThisGame = function() {
+    this.toState(GAMESTATE_FINISHED);
+    this.running = false;
+}
+
+Game.prototype.startThisGame = function() {
+    if (this.state === GAMESTATE_NOTSTARTED) {
+        this.toState(GAMESTATE_PERIOD_1);
+        this.running = true;
+        timetracker.start();
+        return true;
+    } else if (this.state === GAMESTATE_PERIOD_1 ||
+               this.state === GAMESTATE_PERIOD_2 ||
+               this.state === GAMESTATE_PERIOD_3) {
+        if (this.running === false) {
+            this.running = true;
+            timetracker.start();
+            return true;
+        }
+    } else if (this.state === GAMESTATE_OVERTIME) {
+        if (this.running === false) {
+            this.running = true;
+            timetracker.start();
+            return true;
+        }
+    }
+
+    return false;
+}
+
+Game.prototype.startPeriod = function(name) {
+    if (this.state === GAMESTATE_INTERMISSION_1 ||
+        this.state === GAMESTATE_INTERMISSION_2) {
+        this.toState(name);
+        this.running = false;
+        this.periodelapsed_ms = 0;
+        this.periodelapsed_minutes = 0;
+        this.periodelapsed_seconds = 0;
+        timetracker.start();
+    } 
+}
+
+Game.prototype.pauseThisGame = function() {
+    if (this.running === true) {
+        this.running = false;
+        var elapsed = timetracker.elapsed();
+        theGAME.forwardTime(elapsed, sendStateToClients);
+        return true;
+    }
+    return false;
 }
 
 Game.prototype.forwardTime = function(milliseconds, cb) {
-    var finished = false;
+    var periodFinished = false;
     var reportChanges = false;
+
+    if (!this.running) {
+console.log("##### forwardTime called while not running..");
+        return false;
+    }
 
     this.periodelapsed_ms += parseInt(milliseconds);
     if (this.periodelapsed_ms >= this.periodlength_ms) {
         // Period finished.
         this.periodelapsed_ms = this.periodlength_ms;
-        finished = true;
+        periodFinished = true;
     }
     if (this.periodelapsed_ms < 0) {
         this.periodelapsed_ms = 0;
@@ -210,9 +323,7 @@ Game.prototype.forwardTime = function(milliseconds, cb) {
     }
 
     for (var c=this.homepenalties.length-1; c>=0; --c) {
-        if (this.homepenalties[c].forwardTime(milliseconds) === true) {
-//            reportChanges = true;
-        }
+        this.homepenalties[c].forwardTime(milliseconds);
         if (this.homepenalties[c].finished === true) {
             reportChanges = true;
             this.homepenalties.splice(c, 1);
@@ -220,9 +331,7 @@ Game.prototype.forwardTime = function(milliseconds, cb) {
     }
    
     for (var c=this.visitorpenalties.length-1; c>=0; --c) {
-        if (this.visitorpenalties[c].forwardTime(milliseconds) === true) {
-  //          reportChanges = true;
-        }
+        this.visitorpenalties[c].forwardTime(milliseconds);
         if (this.visitorpenalties[c].finished === true) {
             reportChanges = true;
             this.visitorpenalties.splice(c, 1);
@@ -233,26 +342,168 @@ Game.prototype.forwardTime = function(milliseconds, cb) {
         cb();
     }
 
-    return finished;
+    return periodFinished;
 }
 
-Game.prototype.pause = function() {
-    this.state = GAMESTATE_PAUSED;
+Game.prototype.startIntermission = function(state) {
+    timetrackerintermission.start();
+
+    this.intermission_remaining_ms = this.def.intermission_length_minutes * 60 * 1000;
+
+    this.toState(state); 
+    this.running = false;
+
+    this.rewindIntermission(0);
+}
+
+Game.prototype.rewindIntermission = function(milliseconds, cb) {
+    if (this.state !== GAMESTATE_INTERMISSION_1 &&
+        this.state !== GAMESTATE_INTERMISSION_2) {
+        // Invalid state. Bail out.
+
+        this.intermission_remaining_minutes = 0;
+        this.intermission_remaining_seconds = 0;
+        this.old_intermission_remaining_minutes = 0;
+        this.old_intermission_remaining_seconds = 0;
+
+        return;
+    }
+
+    this.intermission_remaining_ms -= parseInt(milliseconds);
+    if (this.intermission_remaining_ms <= 0) {
+        this.intermission_remaining_ms = 0;
+
+        this.intermission_remaining_minutes = 0;
+        this.intermission_remaining_seconds = 0;
+        this.old_intermission_remaining_minutes = 0;
+        this.old_intermission_remaining_seconds = 0;
+
+        return true;
+    }
+
+    this.intermission_remaining_seconds = parseInt(this.intermission_remaining_ms / 1000 + 0.0001) % 60;
+    this.intermission_remaining_minutes = parseInt((this.intermission_remaining_ms / 1000) / 60 + 0.0001);
+    if (this.intermission_remaining_seconds != this.old_intermission_remaining_seconds || this.intermission_remaining_minutes != this.old_intermission_remaining_minutes) {
+        this.old_intermission_remaining_seconds = this.intermission_remaining_seconds;
+        this.old_intermission_remaining_minutes = this.intermission_remaining_minutes;
+
+        if (cb !== undefined) {
+            cb();
+        }
+    }
+
+    return false;
+}
+
+Game.prototype.endThisIntermission = function() {
+    if (this.state === GAMESTATE_INTERMISSION_1) {
+        this.startPeriod(GAMESTATE_PERIOD_2);
+    } else if (this.state == GAMESTATE_INTERMISSION_2) {
+        this.startPeriod(GAMESTATE_PERIOD_3);
+    }
+}
+
+Game.prototype.startTimeout = function(timeoutstate) {
+    if (this.running === true) {
+        // Not allowed if running.
+        return;
+    }
+    switch (this.state) {
+        case GAMESTATE_PERIOD_1:
+        case GAMESTATE_PERIOD_2: 
+        case GAMESTATE_PERIOD_3:
+        break;
+
+        default:
+            console.log((new Date()) + " timeout not allowed in state: " + this.state);
+            return;
+    }
+    this.savedstate = this.state;
+    this.running = false;
+    this.timeout_remaining_ms = 30 * 1000;
+    timetrackertimeout.start();
+    this.toState(timeoutstate);
+    this.rewindTimeout(0);
+}
+
+
+Game.prototype.rewindTimeout = function(milliseconds, cb) {
+    if (this.state !== GAMESTATE_TIMEOUT_HOME &&
+        this.state !== GAMESTATE_TIMEOUT_VISITOR) {
+
+        this.old_timeout_remaining_minutes = 0;
+        this.old_timeout_remaining_seconds = 0;
+        this.timeout_remaining_minutes = 0;
+        this.timeout_remaining_seconds = 0;
+        this.timeout_remaining_ms = 0;
+
+        // -> Invalid state. Bail out.
+        return true;
+    }
+
+    this.timeout_remaining_ms -= parseInt(milliseconds);
+    if (this.timeout_remaining_ms <= 0) {
+
+        this.old_timeout_remaining_minutes = 0;
+        this.old_timeout_remaining_seconds = 0;
+        this.timeout_remaining_minutes = 0;
+        this.timeout_remaining_seconds = 0;
+        this.timeout_remaining_ms = 0;
+
+        return true;
+    }
+
+    this.timeout_remaining_seconds = parseInt(this.timeout_remaining_ms / 1000 + 0.0001) % 60;
+    this.timeout_remaining_minutes = parseInt((this.timeout_remaining_ms / 1000) / 60 + 0.0001);
+
+    if (this.timeout_remaining_minutes != this.old_timeout_remaining_minutes || this.timeout_remaining_seconds != this.old_timeout_remaining_seconds) {
+        this.old_timeout_remaining_seconds = this.timeout_remaining_seconds;
+        this.old_timeout_remaining_minutes = this.timeout_remaining_minutes;
+     
+        if (cb !== undefined) {
+            cb();
+        }
+    }
+
+    return false;
+}
+
+Game.prototype.endThisTimeout = function() {
+    if ((this.state === GAMESTATE_TIMEOUT_HOME || this.state === GAMESTATE_TIMEOUT_VISITOR) && this.savedstate.length > 0) {
+        this.toState(this.savedstate);
+        this.savedstate = "";
+        this.running = false;
+        return true;
+    }
+}
+
+Game.prototype.startOvertime = function() {
+    this.toState(GAMESTATE_OVERTIME);
+    this.periodelapsed_ms = 0;
+    this.periodelapsed_minutes = 0;
+    this.periodelapsed_seconds = 0;
+    this.running = false;
 }
  
 
-var theGAME = new Game();
+var theGAME = new Game(new GameDef_TEST());
 var timetracker = new TimeTrack();
+var timetrackertimeout = new TimeTrack();
+var timetrackerintermission = new TimeTrack();
 
 setTimeout(gameProceed, 250);
 
 var server = http.createServer(function(request, response) {
     console.log((new Date()) + ' Received request for ' + request.url);
-    if (request.url == "/") {
+    if (request.url == "/viewer" || request.url == "/manager" || request.url == "/") {
             console.log((new Date()) + 'returning index.html');
-	    fs.readFile('index.html',function (err, data){
-		response.writeHead(200, {'Content-Type': 'text/html','Content-Length':data.length});
-		response.write(data);
+	    fs.readFile('index.html',function (err, data) {
+                var content = "" + data;
+                if (request.url == "/manager") {
+                    content = content.replace("__VIEWER__", "__MANAGER__");
+                }
+		response.writeHead(200, {'Content-Type': 'text/html','Content-Length':content.length});
+		response.write(content);
 		response.end();
 	    });
     } else if (request.url.endsWith(".js") == true) {
@@ -350,35 +601,22 @@ wsServer.on('request', function(request) {
             var object = JSON.parse(message.utf8Data);
             var cmd = object["_cmd"];
             var arg = object["_arg"];
-            if (cmd === "new") {
-                theGAME = new Game();
-	    } else if (cmd === "start") {
-                if (theGAME.transferState(GAMESTATE_NOTSTARTED, GAMESTATE_RUNNING) === true) {
-                    timetracker.start();
-                    sendStateToClients();
-                } else if (theGAME.transferState(GAMESTATE_PAUSED, GAMESTATE_RUNNING) === true) {
-                    timetracker.start();
+            if (cmd === "start") {
+                if (theGAME.startThisGame() === true) {
                     sendStateToClients();
                 }
             } else if (cmd === "pause") {
-                if (theGAME.transferState(GAMESTATE_RUNNING, GAMESTATE_PAUSED) === true) {
-                    var elapsed = timetracker.elapsed();
-                    theGAME.forwardTime(elapsed, sendStateToClients);
-                    sendStateToClients();
-                }
-            } else if (cmd === "resume") {
-                if (theGAME.transferState(GAMESTATE_PAUSED, GAMESTATE_RUNNING) === true) {
-                    timetracker.start();
+                if (theGAME.pauseThisGame() === true) {
                     sendStateToClients();
                 }
             } else if (cmd === "incsec") {
-                theGAME.forwardTime(1000, sendStateToClients);
+                gameProceed(1000);
             } else if (cmd === "decsec") {
-                theGAME.forwardTime(-1000, sendStateToClients);
+                gameProceed(-1000);
            } else if (cmd === "incmin") {
-                theGAME.forwardTime(60 * 1000, sendStateToClients);
+                gameProceed(60 * 1000);
             } else if (cmd === "decmin") {
-                theGAME.forwardTime(60 * -1000, sendStateToClients);
+                gameProceed(-60 * 1000);
             } else if (cmd === "inchome") {
                 theGAME.modHomeGoal(1, sendStateToClients);
             } else if (cmd === "dechome") {
@@ -405,6 +643,25 @@ wsServer.on('request', function(request) {
             } else if (cmd === "delvisitorpenalty") {
                 theGAME.delVisitorPenalty(arg);
                 sendStateToClients();
+            } else if (cmd === "hometimeout") {
+                theGAME.startTimeout(GAMESTATE_TIMEOUT_HOME);
+                sendStateToClients();
+            } else if (cmd === "visitortimeout") {
+                theGAME.startTimeout(GAMESTATE_TIMEOUT_VISITOR);
+                sendStateToClients();
+            } else if (cmd === "nextstate") {
+                theGAME.endThisTimeout();
+                theGAME.endThisIntermission();
+                sendStateToClients();
+            } else if (cmd === "creategame_c1sm") {
+                theGAME = new Game(new GameDef_C1SM());
+                sendStateToClients();
+            } else if (cmd === "creategame_ejun") {
+                theGAME = new Game(new GameDef_EJUN());
+                sendStateToClients();               
+            } else if (cmd === "creategame_test") {
+                theGAME = new Game(new GameDef_TEST());
+                sendStateToClients();               
             }
         }
     });
@@ -415,20 +672,70 @@ wsServer.on('request', function(request) {
 });
 
 
-function gameProceed() {
+function gameProceed(increment_ms) {
+    var ms = 0;
+    if (increment_ms !== undefined) {
+        ms += parseInt(increment_ms);
+    }
+
     switch (theGAME.state) {
         case GAMESTATE_NOTSTARTED:
-        case GAMESTATE_PAUSED:
-            setTimeout(gameProceed, 500);
         break;
 
-        case GAMESTATE_RUNNING:
-            setTimeout(gameProceed, 250);
-            theGAME.forwardTime(timetracker.elapsedAndStart(), sendStateToClients);
+        case GAMESTATE_OVERTIME:
+            if (theGAME.forwardTime(ms + timetracker.elapsedAndStart(), sendStateToClients) === true) {
+                theGAME.finishThisGame();
+                theGAME.forwardTime(0);
+                sendStateToClients();
+            }
         break;
+
+	case GAMESTATE_PERIOD_1:
+            if (theGAME.forwardTime(ms + timetracker.elapsedAndStart(), sendStateToClients) === true) {
+                theGAME.startIntermission(GAMESTATE_INTERMISSION_1);
+                sendStateToClients();
+            }
+        break;
+
+	case GAMESTATE_INTERMISSION_1:
+            if (theGAME.rewindIntermission(ms + timetrackerintermission.elapsedAndStart(), sendStateToClients) === true) {
+                theGAME.startPeriod(GAMESTATE_PERIOD_2);
+                sendStateToClients();
+            }
+        break;
+
+	case GAMESTATE_PERIOD_2:
+            if (theGAME.forwardTime(ms + timetracker.elapsedAndStart(), sendStateToClients) === true) {
+                theGAME.startIntermission(GAMESTATE_INTERMISSION_2);
+                sendStateToClients();
+            }
+	break;
+
+	case GAMESTATE_INTERMISSION_2:
+            if (theGAME.rewindIntermission(ms + timetrackerintermission.elapsedAndStart(), sendStateToClients) === true) {
+                theGAME.startPeriod(GAMESTATE_PERIOD_3);
+                sendStateToClients();
+            }
+        break;
+
+	case GAMESTATE_PERIOD_3:
+            if (theGAME.forwardTime(ms + timetracker.elapsedAndStart(), sendStateToClients) === true) {
+                if (theGAME.def.overtime_enabled) {
+                    if (theGAME.homegoals === theGAME.visitorgoals) {
+                        theGAME.startOvertime();
+                    } else theGAME.finishThisGame();
+                } else theGAME.finishThisGame();
+                sendStateToClients();
+            }
+	break;
 
         case GAMESTATE_TIMEOUT_HOME:
-        case GAMESTATE_TIMEOUT_VISITOR:
+        case GAMESTATE_TIMEOUT_VISITOR: 
+            if (theGAME.rewindTimeout(ms + timetrackertimeout.elapsedAndStart(), sendStateToClients) === true) {
+                theGAME.endThisTimeout();
+                sendStateToClients();
+           }
         break;
     }
+    setTimeout(gameProceed, 250);
 }

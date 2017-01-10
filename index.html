@@ -1,15 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>WebSocket Echo Client</title>
+  <title>Salibandy tulostaulu v0.1</title>
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="style.css">
   <script>
     "use strict";
     var socket = null;
 
+    // NOTE: node.js changes this to __MANAGER__ shall we be in manager mode instead.
+    var mode = "__VIEWER__";
+
+    function viewerMode() {
+        return mode === "__VIEWER__";
+    }
+
+    if (viewerMode()) {
+        console.log("VIEWER MODE");
+    } else {
+        console.log("MANAGER MODE");
+    }
+
+    var GAMESTATE_NOTSTARTED		=	"PELI EI OLE ALKANUT"
+    var GAMESTATE_PERIOD_1		=	"1. ERÄ"
+    var GAMESTATE_INTERMISSION_1	=	"1. ERÄTAUKO"
+    var GAMESTATE_PERIOD_2		=	"2. ERÄ"
+    var GAMESTATE_INTERMISSION_2	=	"2. ERÄTAUKO"
+    var GAMESTATE_PERIOD_3		=	"3. ERÄ"
+    var GAMESTATE_OVERTIME		=	"JATKOAIKA"
+    var GAMESTATE_FINISHED		=	"PELI PÄÄTTYNYT"
+    var GAMESTATE_TIMEOUT_VISITOR	=	"AIKALISÄ VIERAS"
+    var GAMESTATE_TIMEOUT_HOME		=	"AIKALISÄ KOTI"
+
     var execPAUSE = function() { sendCommand("pause"); };
     var execSTART = function() { sendCommand("start"); };
+    var execSKIP  = function() { sendCommand("nextstate"); };
     
     function timestring(minutes, seconds) {
         var str = minutes;
@@ -27,30 +52,46 @@
             return;
         }
 
-        var ss_button = document.getElementById("primary_button");
-        var time_text = document.getElementById("time");
-
-        if (time_text !== null) {
-            time_text.textContent = timestring(game.periodelapsed_minutes, game.periodelapsed_seconds);
+        var state_title = document.getElementById("title_phase");
+        if (state_title !== null) {
+            state_title.textContent = game.state;
         }
 
-        switch (game.state) {
-            case "game_running":
-                if (ss_button !== null) {
-                    ss_button.textContent = "PAUSE";
-                    ss_button.className = "primary_button_text primary_button_base primary_button_running";
-                    ss_button.removeEventListener("click", execSTART);
-                    ss_button.addEventListener("click", execPAUSE);
-                }
-            break;
+        var time_text = document.getElementById("time");
+        if (time_text !== null) {
+            if (game.state === GAMESTATE_TIMEOUT_VISITOR || game.state === GAMESTATE_TIMEOUT_HOME) {
+                 time_text.textContent = timestring(game.timeout_remaining_minutes, game.timeout_remaining_seconds);
+            }  else if (game.state === GAMESTATE_INTERMISSION_1 || game.state === GAMESTATE_INTERMISSION_2) {
+                time_text.textContent = timestring(game.intermission_remaining_minutes, game.intermission_remaining_seconds); 
+            } else {
+                time_text.textContent = timestring(game.periodelapsed_minutes, game.periodelapsed_seconds);
+            }
+        }
 
-            default:
-                if (ss_button !== null) {
-                    ss_button.textContent = "START";
-                    ss_button.removeEventListener("click", execPAUSE);
-                    ss_button.addEventListener("click", execSTART);
-                    ss_button.className = "primary_button_text primary_button_base primary_button_paused"
+        var ss_button = document.getElementById("primary_button");
+        if (ss_button !== null) {
+            ss_button.removeEventListener("click", execSTART);
+            ss_button.removeEventListener("click", execPAUSE);
+            ss_button.removeEventListener("click", execSKIP);
+           if (game.running) {
+                ss_button.textContent = "PAUSE";
+                ss_button.className = "primary_button_text primary_button_base primary_button_running";
+                ss_button.addEventListener("click", execPAUSE);
+           } else {
+                ss_button.textContent = "START";
+                ss_button.className = "primary_button_text primary_button_base primary_button_paused"
+
+                if (game.state === GAMESTATE_INTERMISSION_1   ||
+                    game.state === GAMESTATE_INTERMISSION_2   ||
+                    game.state === GAMESTATE_TIMEOUT_VISITOR  ||
+                    game.state === GAMESTATE_TIMEOUT_HOME) {
+                    ss_button.addEventListener("click", execSKIP);
+                    ss_button.textContent = "SKIP";
+                } else {
+                   ss_button.addEventListener("click", execSTART); 
+                   ss_button.textContent = "START";
                 }
+            }
         }
     }
 
@@ -66,17 +107,6 @@
        if (elem !== null) {
            elem.textContent = game.visitorgoals
        }
-    }
-
-    function bindButtonToCommand(button, command, arg) {
-        var object = document.getElementById(button);
-        if (object !== null) {
-            if (arg !== undefined) {
-                object.addEventListener("click", function() { sendCommand(command, arg); });
-            } else {
-                object.addEventListener("click", function() { sendCommand(command); });
-            }
-        }
     }
 
     function updatePenalties(game) {
@@ -119,18 +149,49 @@
             socket.send(JSON.stringify(obj));
        }
     }
+
     // Initialize everything when the window finishes loading
     window.addEventListener("load", function(event) {
 
-      var send = document.getElementById("send");
-      var text = document.getElementById("text");
+      function hide(id) {
+          var elem = document.getElementById(id);
+          if (elem !== null) {
+              elem.className += " hide";
+          }
+      }
 
-      var home_goals = document.getElementById("home_goals");
-      var visitor_goals = document.getElementById("visitor_goals");
-
-      var message = document.getElementById("message");
-
-      var elapsed_time = document.getElementById("elapsed_time");
+      if (viewerMode()) {
+          hide("addhomepenalty2");
+          hide("addhomepenalty5");
+          hide("addvisitorpenalty2");
+          hide("addvisitorpenalty5");
+          hide("creategame_sm");
+          hide("creategame_ejun");
+          hide("creategame_test");
+          hide("spacer_between_penalty_buttons_and_items");
+          hide("spacer_between_top_buttons_and_title");
+          hide("inchomegoals");
+          hide("dechomegoals");
+          hide("incvisitorgoals");
+          hide("decvisitorgoals");
+          hide("decminutes");
+          hide("decseconds");
+          hide("incminutes");
+          hide("incseconds");
+          hide("primary_button");
+	  hide("delhomepenalty_0");
+	  hide("delhomepenalty_1");
+	  hide("delhomepenalty_2");
+	  hide("delhomepenalty_3");
+	  hide("delhomepenalty_4");
+	  hide("delvisitorpenalty_0");
+	  hide("delvisitorpenalty_1");
+	  hide("delvisitorpenalty_2");
+	  hide("delvisitorpenalty_3");
+	  hide("delvisitorpenalty_4");
+	  hide("hometimeout");
+          hide("visitortimeout");
+      }
 
       var uri = "ws://" + window.location.host + window.location.pathname
 
@@ -149,13 +210,9 @@
           var evt = object["_evt"];
           var dat = object["_data"];
 
-          if (evt !== undefined && evt === "STATE" && dat !== undefined) {
+          if (evt !== undefined && evt === "STATE") {
               updateState(dat);
-          } else {
-              var datex = dat !== undefined ? dat.toString() : "";
-              console.log("CMD=" + cmd + " EVT=" + evt + " DATA=" + datex);
           }
-	//  message.textContent = "Server Says: " + event.data;
       });
 
       // Display any errors that occur
@@ -168,71 +225,42 @@
         //status.textContent = "Not Connected";
       });
       
-      bindButtonToCommand("start", "start");
-      bindButtonToCommand("pause", "pause");
-      bindButtonToCommand("resume", "resume");
-      bindButtonToCommand("homegoalinc", "inchome");
-      bindButtonToCommand("homegoaldec", "dechome");
-      bindButtonToCommand("visitorgoalinc", "incvisitor");
-      bindButtonToCommand("visitorgoaldec", "decvisitor");
-      bindButtonToCommand("home2min", "addhomepenalty2");
-      bindButtonToCommand("home5min", "addhomepenalty5");
-      bindButtonToCommand("visitor2min", "addvisitorpenalty2");
-      bindButtonToCommand("visitor5min", "addvisitorpenalty5");
-      bindButtonToCommand("incsec", "incsec");
-      bindButtonToCommand("decsec", "decsec");
-      bindButtonToCommand("incmin", "incmin");
-      bindButtonToCommand("decmin", "decmin");
-
-      // Send text to the server when the Send button is clicked
-      send.addEventListener("click", function(event) {
-//        socket.send(text.value);
-        sendCommand(text.value);
-        text.value = "";
-      });
     });
+
+
+   function confirm_CreateGame(id, spec) {
+      if (confirm("Uuden pelin luonti tuhoaa nykyisen pelin. Luodaanko silti uusi peli (" + spec+") ?")) {
+          sendCommand(id);
+      }
+   }
   </script>
 </head>
 <body>
 
+  <button id="creategame_sm" type="button" class="plus_button_superwide left" onclick="confirm_CreateGame('creategame_c1sm', '3*20min, 12min erätauko');">C1-Peli</button>
+  <button id="creategame_ejun" type="button" class="plus_button_superwide left" onclick="confirm_CreateGame('creategame_ejun', '3*15min, 3min erätauko');">E/D Jun</button>
+  <button id="creategame_test" type="button" class="plus_button_superwide left" onclick="confirm_CreateGame('creategame_test', '3*2min, 1min erätauko');">TEST</button>
+
+  <div id="spacer_between_top_buttons_and_title" style="height: 50px; width: 1px"></div>
+
   <div id="title_home" class="title left">KOTI</div>
   <div id="title_visitor" class="title right">VIERAS</div>
   
-  <div style="height: 100px; width: 1px"></div>
+  <div id="spacer_between_title_and_phase" style="height: 100px; width: 1px"></div>
 
-  <center>
-     <div id="title_period" class="title">2. ERÄTAUKO</div>
-  </center>
+  <div id="title_phase" class="titlephase" style="width: 100%"></div>
 
   <div style="height: 20px; width: 1px"></div>
 
-<!--
-  <input id="send" type="button" value="Send" />&nbsp;
-  <input id="start" type="button" value="Start" />&nbsp;
-  <input id="pause" type="button" value="Pause" />&nbsp;
-  <input id="resume" type="button" value="Resume" />&nbsp;
-  <input id="homegoalinc" type="button" value="H-Goal+" />&nbsp;
-  <input id="homegoaldec" type="button" value="H-Goal-" />&nbsp;
-  <input id="visitorgoalinc" type="button" value="V-Goal+" />&nbsp;
-  <input id="visitorgoaldec" type="button" value="V-Goal-" />&nbsp;
-  <input id="home2min" type="button" value="H-2min" />&nbsp;
-  <input id="home5min" type="button" value="H-5min" />&nbsp;
-  <input id="visitor2min" type="button" value="V-2min" />&nbsp;
-  <input id="visitor5min" type="button" value="V-5min" />&nbsp;
-  <input id="incsec" type="button" value="+Sec" />&nbsp;
-  <input id="decsec" type="button" value="-Sec" />&nbsp;
-  <input id="incmin" type="button" value="+Min" />&nbsp;
-  <input id="decmin" type="button" value="-Min" />&nbsp;
--->
     <div id="goal_container">
       <div id="homegoalcontrol" style="float: left; margin: 10px;">
-         <button type="button" class="plus_button" onclick="sendCommand('inchome');">+</button>
-         <button type="button" class="minus_button" onclick="sendCommand('dechome');">-</button>
+         <button id="inchomegoals" type="button" class="plus_button" onclick="sendCommand('inchome');">+</button>
+         <button id="dechomegoals" type="button" class="minus_button" onclick="sendCommand('dechome');">-</button>
       </div>
       <div id="homegoals" class="left_text text_goals">-</div>
       <div id="visitorgoalcontrol"  style="float: right; margin: 10px;">
-         <button type="button" class="plus_button" onclick="sendCommand('incvisitor');">+</button>
-         <button type="button" class="minus_button" onclick="sendCommand('decvisitor');">-</button>
+         <button id="incvisitorgoals" type="button" class="plus_button" onclick="sendCommand('incvisitor');">+</button>
+         <button id="decvisitorgoals" type="button" class="minus_button" onclick="sendCommand('decvisitor');">-</button>
       </div>
       <div id="visitorgoals" class="right_text text_goals">-</div>
     </div>
@@ -240,86 +268,86 @@
   <center>
 
     <div id="timecontainer" class="horcenter_block_50percent">
-        <div id="time" class="horcenter_text text_time">00:00</div> 
+        <div id="time" class="horcenter_text text_time">0:00</div> 
         <div id="minute_control_container" style="float: left;">
-          <button type="button" class="plus_button_wide" onclick="sendCommand('incmin');">+Min</button>
-          <button type="button" class="minus_button_wide" onclick="sendCommand('decmin');">-Min</button>
+          <button id="incminutes" type="button" class="plus_button_wide" onclick="sendCommand('incmin');">+Min</button>
+          <button id="decminutes" type="button" class="minus_button_wide" onclick="sendCommand('decmin');">-Min</button>
         </div>
         <div id="second_control_container" style="float: right;">
-          <button type="button" class="plus_button_wide" onclick="sendCommand('incsec');">+Sec</button>
-          <button type="button" class="minus_button_wide" onclick="sendCommand('decsec');">-Sec</button>
+          <button id="incseconds" type="button" class="plus_button_wide" onclick="sendCommand('incsec');">+Sec</button>
+          <button id="decseconds" type="button" class="minus_button_wide" onclick="sendCommand('decsec');">-Sec</button>
         </div>
-    </div>
+																																																								    </div>				
 
 
-    <button type="button" id="primary_button"/>
+   <button																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	type="button" id="primary_button"/>
 
   </center>
   
   <div style="width: 1px; height: 50px;"></div>
 
-  <button type="button" class="plus_button_extrawide left" onclick="sendCommand('addhomepenalty2');">2 MIN</button>
-  <button type="button" class="plus_button_extrawide left" onclick="sendCommand('addhomepenalty5');">5 MIN</button>
-  <button type="button" class="plus_button_extrawide right" onclick="sendCommand('addvisitorpenalty5');">5 MIN</button>
-  <button type="button" class="plus_button_extrawide right" onclick="sendCommand('addvisitorpenalty2');">2 MIN</button>
+  <button id="addhomepenalty2" type="button" class="plus_button_extrawide left" onclick="sendCommand('addhomepenalty2');">2 MIN</button>
+  <button id="addhomepenalty5" type="button" class="plus_button_extrawide left" onclick="sendCommand('addhomepenalty5');">5 MIN</button>
+  <button id="addvisitorpenalty5" type="button" class="plus_button_extrawide right" onclick="sendCommand('addvisitorpenalty5');">5 MIN</button>
+  <button id="addvisitorpenalty2" type="button" class="plus_button_extrawide right" onclick="sendCommand('addvisitorpenalty2');">2 MIN</button>
 
-  <div style="width: 1px; height: 20px;"></div>
+  <div id="spacer_between_penalty_buttons_and_items" style="width: 1px; height: 20px;"></div>
 
   <table id="penalty_table" style="width: 100%">
     <tr style="height: 80px">
       <td style="width: 100px;">
-        <button type="button" class="minus_button left" onclick="sendCommand('delhomepenalty', 0);">-</button>
+        <button id="delhomepenalty_0" type="button" class="minus_button left" onclick="sendCommand('delhomepenalty', 0);">-</button>
       </td>
       <td id="penalty_home_0" class="penalty_text left" ></td>
       <td id="penalty_visitor_0" class="penalty_text right"></td>
       <td style="width: 100px;">
-        <button type="button" class="minus_button right" onclick="sendCommand('delvisitorpenalty', 0);">-</button>
+        <button id="delvisitorpenalty_0" type="button" class="minus_button right" onclick="sendCommand('delvisitorpenalty', 0);">-</button>
       </td>
     </tr>
     <tr style="height: 80px">
       <td style="width: 100px;">
-        <button type="button" class="minus_button left" onclick="sendCommand('delhomepenalty', 1);">-</button>
+        <button id="delhomepenalty_1" type="button" class="minus_button left" onclick="sendCommand('delhomepenalty', 1);">-</button>
       </td>
       <td id="penalty_home_1" class="penalty_text left"></td>
       <td id="penalty_visitor_1" class="penalty_text right"></td>
       <td style="width: 100px;">
-        <button type="button" class="minus_button right" onclick="sendCommand('delvisitorpenalty', 1);">-</button>
+        <button id="delvisitorpenalty_1" type="button" class="minus_button right" onclick="sendCommand('delvisitorpenalty', 1);">-</button>
       </td>
     </tr>
     <tr style="height: 80px">
       <td style="width: 100px;">
-        <button type="button" class="minus_button left" onclick="sendCommand('delhomepenalty', 2);">-</button>
+        <button id="delhomepenalty_2" type="button" class="minus_button left" onclick="sendCommand('delhomepenalty', 2);">-</button>
       </td>
       <td id="penalty_home_2" class="penalty_text left"></td>
       <td id="penalty_visitor_2" class="penalty_text right"></td>
       <td style="width: 100px;">
-        <button type="button" class="minus_button right" onclick="sendCommand('delvisitorpenalty', 2);">-</button>
+        <button id="delvisitorpenalty_2" type="button" class="minus_button right" onclick="sendCommand('delvisitorpenalty', 2);">-</button>
       </td>
     </tr>
     <tr style="height: 80px">
       <td style="width: 100px;">
-        <button type="button" class="minus_button left" onclick="sendCommand('delhomepenalty', 3);">-</button>
+        <button id="delhomepenalty_3" type="button" class="minus_button left" onclick="sendCommand('delhomepenalty', 3);">-</button>
       </td>
       <td id="penalty_home_3" class="penalty_text left"></td>
       <td id="penalty_visitor_3" class="penalty_text right"></td>
       <td style="width: 100px;">
-        <button type="button" class="minus_button right" onclick="sendCommand('delvisitorpenalty', 3);">-</button>
+        <button id="delvisitorpenalty_3" type="button" class="minus_button right" onclick="sendCommand('delvisitorpenalty', 3);">-</button>
       </td>
     </tr>
     <tr style="height: 80px">
       <td style="width: 100px;">
-        <button type="button" class="minus_button left" onclick="sendCommand('delhomepenalty', 4);">-</button>
+        <button id="delhomepenalty_4" type="button" class="minus_button left" onclick="sendCommand('delhomepenalty', 4);">-</button>
       </td>
       <td id="penalty_home_4" class="penalty_text left"></td>
       <td id="penalty_visitor_4" class="penalty_text right"></td>
       <td style="width: 100px;">
-        <button type="button" class="minus_button right" onclick="sendCommand('delvisitorpenalty', 4);">-</button>
+        <button id="delvisitorpenalty_4" type="button" class="minus_button right" onclick="sendCommand('delvisitorpenalty', 4);">-</button>
       </td>
     </tr>
   </table>
 
-  <button type="button" class="plus_button_superwide left" onclick="sendCommand('hometimeout');">AIKALISÄ</button>
-  <button type="button" class="plus_button_superwide right" onclick="sendCommand('visitortimeout');">AIKALISÄ</button>
+  <button id="hometimeout" type="button" class="plus_button_superwide left" onclick="sendCommand('hometimeout');">AIKALISÄ</button>
+  <button id="visitortimeout" type="button" class="plus_button_superwide right" onclick="sendCommand('visitortimeout');">AIKALISÄ</button>
 
 </body>
 </html>
