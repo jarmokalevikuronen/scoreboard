@@ -493,29 +493,33 @@ var timetrackerintermission = new TimeTrack();
 
 setTimeout(gameProceed, 250);
 
+String.prototype.endsWith = function (s) {
+  return this.length >= s.length && this.substr(this.length - s.length) == s;
+}
 var server = http.createServer(function(request, response) {
     console.log((new Date()) + ' Received request for ' + request.url);
-    if (request.url == "/viewer" || request.url == "/manager" || request.url == "/") {
+    var url = "" + request.url;
+    if (url == "/viewer" || url == "/manager" || url == "/") {
             console.log((new Date()) + 'returning index.html');
 	    fs.readFile('index.html',function (err, data) {
                 var content = "" + data;
-                if (request.url == "/manager") {
+                if (url == "/manager") {
                     content = content.replace("__VIEWER__", "__MANAGER__");
                 }
 		response.writeHead(200, {'Content-Type': 'text/html','Content-Length':content.length});
 		response.write(content);
 		response.end();
 	    });
-    } else if (request.url.endsWith(".js") == true) {
-            console.log((new Date()) + 'returning .' + request.url);
-	    fs.readFile('.' + request.url,function (err, data){
+    } else if (url.endsWith(".js") == true) {
+            console.log((new Date()) + 'returning .' + url);
+	    fs.readFile('.' + url,function (err, data){
 		response.writeHead(200, {'Content-Type': 'application/javascript','Content-Length':data.length});
 		response.write(data);
 		response.end();      
 	    });
-    } else if (request.url.endsWith(".css") == true) {
-            console.log((new Date()) + 'returning .' + request.url);
-	    fs.readFile('.' + request.url,function (err, data){
+    } else if (url.endsWith(".css") == true) {
+            console.log((new Date()) + 'returning .' + url);
+	    fs.readFile('.' + url,function (err, data){
 		response.writeHead(200, {'Content-Type': 'text/css','Content-Length':data.length});
 		response.write(data);
 		response.end();      
