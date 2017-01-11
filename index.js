@@ -98,15 +98,15 @@ var game = new Game(new GameDef_C1SM());
 var penaltycounter = 0;
 
 var GAMESTATE_NOTSTARTED	=	"PELI EI OLE ALKANUT"
-var GAMESTATE_PERIOD_1		=	"1. ERÄ"
-var GAMESTATE_INTERMISSION_1	=	"1. ERÄTAUKO"
-var GAMESTATE_PERIOD_2		=	"2. ERÄ"
-var GAMESTATE_INTERMISSION_2	=	"2. ERÄTAUKO"
-var GAMESTATE_PERIOD_3		=	"3. ERÄ"
+var GAMESTATE_PERIOD_1		=	"1. ERA"
+var GAMESTATE_INTERMISSION_1	=	"1. ERATAUKO"
+var GAMESTATE_PERIOD_2		=	"2. ERA"
+var GAMESTATE_INTERMISSION_2	=	"2. ERATAUKO"
+var GAMESTATE_PERIOD_3		=	"3. ERA"
 var GAMESTATE_OVERTIME		=	"JATKOAIKA"
-var GAMESTATE_FINISHED		=	"PELI PÄÄTTYNYT"
-var GAMESTATE_TIMEOUT_VISITOR	=	"AIKALISÄ VIERAS"
-var GAMESTATE_TIMEOUT_HOME	=	"AIKALISÄ KOTI"
+var GAMESTATE_FINISHED		=	"PELI PAATTYNYT"
+var GAMESTATE_TIMEOUT_VISITOR	=	"AIKALISA VIERAS"
+var GAMESTATE_TIMEOUT_HOME	=	"AIKALISA KOTI"
 
 
 function Game(def) {
@@ -294,13 +294,14 @@ Game.prototype.pauseThisGame = function() {
     return false;
 }
 
-Game.prototype.forwardTime = function(milliseconds, cb) {
+Game.prototype.forwardTime = function(milliseconds, cb, force) {
     var periodFinished = false;
     var reportChanges = false;
 
     if (!this.running) {
-console.log("##### forwardTime called while not running..");
-        return false;
+        if (force === undefined || force !== true) {
+            return false;
+        }
     }
 
     this.periodelapsed_ms += parseInt(milliseconds);
@@ -614,13 +615,29 @@ wsServer.on('request', function(request) {
                     sendStateToClients();
                 }
             } else if (cmd === "incsec") {
-                gameProceed(1000);
+                if (theGAME.running) {
+                    gameProceed(1000);
+                } else {
+                    theGAME.forwardTime(1000, sendStateToClients, true);
+                }
             } else if (cmd === "decsec") {
-                gameProceed(-1000);
+                if (theGAME.running) {
+                    gameProceed(-1000);
+                } else {
+                    theGAME.forwardTime(-1000, sendStateToClients, true);
+                }
            } else if (cmd === "incmin") {
-                gameProceed(60 * 1000);
+                if (theGAME.running) {
+                    gameProceed(60 * 1000);
+                } else {
+                    theGAME.forwardTime(60 * 1000, sendStateToClients, true);
+                }
             } else if (cmd === "decmin") {
-                gameProceed(-60 * 1000);
+                if (theGAME.running) {
+                     gameProceed(-60 * 1000);
+                } else {
+                     theGAME.forwardTime(-60 * 1000, sendStateToClients, true);
+                }
             } else if (cmd === "inchome") {
                 theGAME.modHomeGoal(1, sendStateToClients);
             } else if (cmd === "dechome") {

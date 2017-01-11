@@ -3,7 +3,140 @@
 <head>
   <title>Salibandy tulostaulu v0.1</title>
   <meta charset="UTF-8" />
-  <link rel="stylesheet" type="text/css" href="style.css">
+  <style>
+
+    .hide {
+      visibility:hidden;
+    }
+    .penalty_time_text {
+      color: black;
+      font-size: 3em;
+      font-weight: bold;
+      text-align: left;
+    }
+    .title_text {
+      color: black;
+      font-size: 4em;
+      font-weight: bold;
+    }
+    .home_visitor_indicator_text {
+      color: black;
+      font-size: 4em;
+    }
+    .home_visitor_goal_text {
+      color: black;
+      font-size: 8em;
+    }
+    .time_text {
+      text-align: center;
+      font-weight: bold;
+      font-size: 10em;
+    }
+    .add_button {
+      font-weight: bold;
+      font-size: 50px;
+      border: 4px solid;
+      border-color: gray;
+      border-radius: 20px;
+      background-color: green;
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      vertical-align: middle;
+      text-align: center;
+    }
+    .rem_button {
+      font-weight: bold;
+      font-size: 50px;
+      border: 4px solid;
+      border-color: gray;
+      border-radius: 20px;
+      background-color: red;
+      width: 40px;
+      height: 40px;
+      line-height: 30px;
+      vertical-align: middle;
+      text-align: center;
+    }
+    .add_button_goal {
+      font-weight: bold;
+      font-size: 50px;
+      border: 4px solid;
+      border-color: gray;
+      border-radius: 25px;
+      background-color: green;
+      width: 50px;
+      height: 50px;
+      line-height: 40px;
+      vertical-align: middle;
+      text-align: center;
+    }
+    .rem_button_goal {
+      font-weight: bold;
+      font-size: 50px;
+      border: 4px solid;
+      border-color: gray;
+      border-radius: 25px;
+      background-color: red;
+      width: 50px;
+      height: 50px;
+      line-height: 40px;
+      vertical-align: middle;
+      text-align: center;
+    }
+    .largesize_button {
+      width: 60px; 
+      height: 60px;
+      line-height: 60px;
+      border-radius: 30px;
+    }
+    .wide_button {
+      width: 160px; 
+      height: 60px;
+      line-height: 60px;
+      border-radius: 30px;
+    }
+    .master_button {
+      font-size: 4em;
+      font-weight: bold;
+      border: 5px solid;
+      border-radius: 30px;
+      border-color: gray;
+      background-color: green;
+      text-align: center;
+    } 
+    .master_button_running {
+      font-size: 4em;
+      font-weight: bold;
+      border: 5px solid;
+      border-radius: 30px;
+      border-color: gray;
+      background-color: green;
+      text-align: center;
+    } 
+    .master_button_paused {
+      font-size: 4em;
+      font-weight: bold;
+      border: 5px solid;
+      border-radius: 30px;
+      border-color: gray;
+      background-color: red;
+      text-align: center;
+    } 
+    .action_button {
+      width: 100px;
+      height: 50px;
+      border-radius: 10px;
+      line-height: 50px;
+      text-align: center;
+      background-color: green;
+      border-color: gray;
+      border-width: 2px solid;
+      font-weight: bold;
+    }
+
+  </style>
+
   <script>
     "use strict";
     var socket = null;
@@ -22,15 +155,15 @@
     }
 
     var GAMESTATE_NOTSTARTED		=	"PELI EI OLE ALKANUT"
-    var GAMESTATE_PERIOD_1		=	"1. ERÄ"
-    var GAMESTATE_INTERMISSION_1	=	"1. ERÄTAUKO"
-    var GAMESTATE_PERIOD_2		=	"2. ERÄ"
-    var GAMESTATE_INTERMISSION_2	=	"2. ERÄTAUKO"
-    var GAMESTATE_PERIOD_3		=	"3. ERÄ"
+    var GAMESTATE_PERIOD_1		=	"1. ERA"
+    var GAMESTATE_INTERMISSION_1	=	"1. ERATAUKO"
+    var GAMESTATE_PERIOD_2		=	"2. ERA"
+    var GAMESTATE_INTERMISSION_2	=	"2. ERATAUKO"
+    var GAMESTATE_PERIOD_3		=	"3. ERA"
     var GAMESTATE_OVERTIME		=	"JATKOAIKA"
-    var GAMESTATE_FINISHED		=	"PELI PÄÄTTYNYT"
-    var GAMESTATE_TIMEOUT_VISITOR	=	"AIKALISÄ VIERAS"
-    var GAMESTATE_TIMEOUT_HOME		=	"AIKALISÄ KOTI"
+    var GAMESTATE_FINISHED		=	"PELI PAATTYNYT"
+    var GAMESTATE_TIMEOUT_VISITOR	=	"AIKALISA VIERAS"
+    var GAMESTATE_TIMEOUT_HOME		=	"AIKALISA KOTI"
 
     var execPAUSE = function() { sendCommand("pause"); };
     var execSTART = function() { sendCommand("start"); };
@@ -68,19 +201,18 @@
             }
         }
 
-        var ss_button = document.getElementById("primary_button");
+        var ss_button = document.getElementById("master_button");
         if (ss_button !== null) {
             ss_button.removeEventListener("click", execSTART);
             ss_button.removeEventListener("click", execPAUSE);
             ss_button.removeEventListener("click", execSKIP);
            if (game.running) {
                 ss_button.textContent = "PAUSE";
-                ss_button.className = "primary_button_text primary_button_base primary_button_running";
+                ss_button.className = "master_button_running";
                 ss_button.addEventListener("click", execPAUSE);
            } else {
                 ss_button.textContent = "START";
-                ss_button.className = "primary_button_text primary_button_base primary_button_paused"
-
+                ss_button.className = "master_button_paused";
                 if (game.state === GAMESTATE_INTERMISSION_1   ||
                     game.state === GAMESTATE_INTERMISSION_2   ||
                     game.state === GAMESTATE_TIMEOUT_VISITOR  ||
@@ -92,18 +224,19 @@
                    ss_button.textContent = "START";
                 }
             }
+            if (viewerMode()) ss_button.className += " hide";
         }
     }
 
     function updateHomeGoals(game) {
-       var elem = document.getElementById("homegoals");
+       var elem = document.getElementById("home_goals");
        if (elem !== null) {
            elem.textContent = game.homegoals
        }
     }
 
     function updateVisitorGoals(game) {
-       var elem = document.getElementById("visitorgoals");
+       var elem = document.getElementById("visitor_goals");
        if (elem !== null) {
            elem.textContent = game.visitorgoals
        }
@@ -111,8 +244,8 @@
 
     function updatePenalties(game) {
        for (var c=0; c<5; ++c) {
-           var homeElem = document.getElementById("penalty_home_" + c);
-           var visitorElem = document.getElementById("penalty_visitor_" + c);
+           var homeElem = document.getElementById("home_penalty_" + c + "_time");
+           var visitorElem = document.getElementById("visitor_penalty_" + c + "_time");
     
            if (homeElem !== null) {
                var data = "";
@@ -160,37 +293,70 @@
           }
       }
 
+     function link(id,cmd, arg) {
+         var elem = document.getElementById(id);
+         if (elem !== null) {
+           if (arg !== undefined) {
+                elem.addEventListener('click', function() { sendCommand(cmd, arg); });
+           } else { 
+                elem.addEventListener('click', function() { sendCommand(cmd); });
+           }
+         }
+     }
+
       if (viewerMode()) {
-          hide("addhomepenalty2");
-          hide("addhomepenalty5");
-          hide("addvisitorpenalty2");
-          hide("addvisitorpenalty5");
-          hide("creategame_sm");
-          hide("creategame_ejun");
-          hide("creategame_test");
-          hide("spacer_between_penalty_buttons_and_items");
-          hide("spacer_between_top_buttons_and_title");
-          hide("inchomegoals");
-          hide("dechomegoals");
-          hide("incvisitorgoals");
-          hide("decvisitorgoals");
-          hide("decminutes");
-          hide("decseconds");
-          hide("incminutes");
-          hide("incseconds");
-          hide("primary_button");
-	  hide("delhomepenalty_0");
-	  hide("delhomepenalty_1");
-	  hide("delhomepenalty_2");
-	  hide("delhomepenalty_3");
-	  hide("delhomepenalty_4");
-	  hide("delvisitorpenalty_0");
-	  hide("delvisitorpenalty_1");
-	  hide("delvisitorpenalty_2");
-	  hide("delvisitorpenalty_3");
-	  hide("delvisitorpenalty_4");
-	  hide("hometimeout");
-          hide("visitortimeout");
+          hide("add_visitor_2min_button");
+          hide("add_visitor_5min_button");
+          hide("add_home_2min_button");
+          hide("add_home_5min_button");
+          hide("rem_visitor_penalty_0_button");
+          hide("rem_visitor_penalty_1_button");
+          hide("rem_visitor_penalty_2_button");
+          hide("rem_visitor_penalty_3_button");
+          hide("rem_visitor_penalty_4_button");
+          hide("rem_home_penalty_0_button");
+          hide("rem_home_penalty_1_button");
+          hide("rem_home_penalty_2_button");
+          hide("rem_home_penalty_3_button");
+          hide("rem_home_penalty_4_button");
+          hide("add_second_button");
+          hide("rem_second_button");
+          hide("add_minute_button");
+          hide("rem_minute_button");
+          hide("add_visitorgoal_button");
+          hide("rem_visitorgoal_button");
+          hide("add_homegoal_button");
+	  hide("rem_homegoal_button");
+          hide("newgame_sm_button");
+          hide("newgame_fed_button");
+          hide("newgame_test_button");
+          hide("visitor_timeout_button");
+          hide("home_timeout_button");
+      } else {
+          link("add_visitor_2min_button", "addvisitorpenalty2");
+          link("add_visitor_5min_button", "addvisitorpenalty5");
+          link("add_home_2min_button", "addhomepenalty2");
+          link("add_home_5min_button", "addhomepenalty5");
+          link("rem_visitor_penalty_0_button", "delvisitorpenalty", 0);
+          link("rem_visitor_penalty_1_button", "delvisitorpenalty", 1);
+          link("rem_visitor_penalty_2_button", "delvisitorpenalty", 2);
+          link("rem_visitor_penalty_3_button", "delvisitorpenalty", 3);
+          link("rem_visitor_penalty_4_button", "delvisitorpenalty", 4);
+          link("rem_home_penalty_0_button", "delhomepenalty", 0);
+          link("rem_home_penalty_1_button", "delhomepenalty", 1);
+          link("rem_home_penalty_2_button", "delhomepenalty", 2);
+          link("rem_home_penalty_3_button", "delhomepenalty", 3);
+          link("rem_home_penalty_4_button", "delhomepenalty", 4);
+          link("add_second_button", "incsec");
+          link("rem_second_button", "decsec");
+          link("add_minute_button", "incmin");
+          link("rem_minute_button", "decmin");
+          link("add_visitorgoal_button", "incvisitor");
+          link("rem_visitorgoal_button", "decvisitor");
+          link("add_homegoal_button", "inchome");
+	  link("rem_homegoal_button", "dechome");
+          link("visitor_timeout_button", "visitortimeout");
+          link("home_timeout_button", "hometimeout");
       }
 
       var uri = "ws://" + window.location.host + window.location.pathname
@@ -235,119 +401,110 @@
    }
   </script>
 </head>
-<body>
+<body style="height: 100vh; width: 100vw;">
 
-  <button id="creategame_sm" type="button" class="plus_button_superwide left" onclick="confirm_CreateGame('creategame_c1sm', '3*20min, 12min erätauko');">C1-Peli</button>
-  <button id="creategame_ejun" type="button" class="plus_button_superwide left" onclick="confirm_CreateGame('creategame_ejun', '3*15min, 3min erätauko');">E/D Jun</button>
-  <button id="creategame_test" type="button" class="plus_button_superwide left" onclick="confirm_CreateGame('creategame_test', '3*2min, 1min erätauko');">TEST</button>
+  <div id="newgame_sm_button" class="action_button" style="position:fixed; top:5px; left:10px;" onclick="confirm_CreateGame('creategame_c1sm', '(3x20m, 12m er�tauko, jatkoaika');">C1-SM</div>
+  <div id="newgame_fed_button" class="action_button" style="position:fixed; top:5px; left:125px;" onclick="confirm_CreateGame('creategame_ejun', '(3x15m, 3m er�tauko');">F/E/D-Jun</div>
+  <div id="newgame_test_button" class="action_button" style="position:fixed; top: 5px; right: 5px;" onclick="confirm_CreateGame('creategame_test', '(3x2m, 1m er�tauko, jatkoaika');">TEST</div>
 
-  <div id="spacer_between_top_buttons_and_title" style="height: 50px; width: 1px"></div>
+  <div id="title_container" style="width: 100%;">
+     <div id="title_phase" class="title_text" style="text-align: center;"></div>
+  </div>
 
-  <div id="title_home" class="title left">KOTI</div>
-  <div id="title_visitor" class="title right">VIERAS</div>
-  
-  <div id="spacer_between_title_and_phase" style="height: 100px; width: 1px"></div>
+  <div id="title_goal_spacer" style="width: 100%; height: 10px;" ></div>
 
-  <div id="title_phase" class="titlephase" style="width: 100%"></div>
+  <div id="goal_container" style="margin-left: 5%; width: 90%; height: 25%;">
+    <div id="home_goal_button_container" style="height: 100%; width: 10%; float: left;">
+       <div id="add_homegoal_button" class="add_button_goal" style="margin-top: 2%; position: absolute;">+</div>
+       <div id="rem_homegoal_button" class="rem_button_goal" style="margin-top: 10%; position: absolute;">-</div>
+     </div>
 
-  <div style="height: 20px; width: 1px"></div>
+    <div id="home_info" class="home_visitor_indicator_text" style="float: left; width: 10%; height:40%; ">K</div>
+    <div id="home_goals" class="home_visitor_goal_text" style="float: left; width: 25%; height: 100%; ">-</div>
 
-    <div id="goal_container">
-      <div id="homegoalcontrol" style="float: left; margin: 10px;">
-         <button id="inchomegoals" type="button" class="plus_button" onclick="sendCommand('inchome');">+</button>
-         <button id="dechomegoals" type="button" class="minus_button" onclick="sendCommand('dechome');">-</button>
-      </div>
-      <div id="homegoals" class="left_text text_goals">-</div>
-      <div id="visitorgoalcontrol"  style="float: right; margin: 10px;">
-         <button id="incvisitorgoals" type="button" class="plus_button" onclick="sendCommand('incvisitor');">+</button>
-         <button id="decvisitorgoals" type="button" class="minus_button" onclick="sendCommand('decvisitor');">-</button>
-      </div>
-      <div id="visitorgoals" class="right_text text_goals">-</div>
-    </div>
+    <div id="visitor_goal_button_container" style="height: 100%; width: 10%; float: right; align:right;">
+       <div id="add_visitorgoal_button" class="add_button_goal" style="margin-top: 2%; margin-left: 3%; position: absolute;">+</div>
+       <div id="rem_visitorgoal_button" class="rem_button_goal" style="margin-top: 10%; margin-left: 3%; position: absolute;">-</div>
+     </div>
 
-  <center>
+    <div id="visitor_info" class="home_visitor_indicator_text" style="float: right; text-align: right; width: 10%; height:40%; ">V</div>
+    <div id="visitor_goals" class="home_visitor_goal_text" style="text-align: right; float: right; width: 25%; height: 100%; ">-</div>
+  </div>
+ 
+  <div id="time_container" style="height: 25%; width: 100%; ">
+     <div id="time_button_container_minute" style="height: 100%; margin-left: 15%; width: 10%; float: left;">
+       <div id="add_minute_button" class="add_button" style="margin-top: 2%; position: absolute;">+</div>
+       <div id="rem_minute_button" class="rem_button" style="margin-top: 10%; position: absolute;">-</div>
+     </div>
 
-    <div id="timecontainer" class="horcenter_block_50percent">
-        <div id="time" class="horcenter_text text_time">0:00</div> 
-        <div id="minute_control_container" style="float: left;">
-          <button id="incminutes" type="button" class="plus_button_wide" onclick="sendCommand('incmin');">+Min</button>
-          <button id="decminutes" type="button" class="minus_button_wide" onclick="sendCommand('decmin');">-Min</button>
-        </div>
-        <div id="second_control_container" style="float: right;">
-          <button id="incseconds" type="button" class="plus_button_wide" onclick="sendCommand('incsec');">+Sec</button>
-          <button id="decseconds" type="button" class="minus_button_wide" onclick="sendCommand('decsec');">-Sec</button>
-        </div>
-																																																								    </div>				
+     <div id="time" class="time_text" style="width: 50%; align: center; text-align: center; float:left;">0:00</div> 
 
+     <div id="time_button_container_second" style="height: 100%; margin-right: 15%; width: 10%; float: left;">
+       <div id="add_second_button" class="add_button" style="margin-top: 2%; margin-left: 4%; position: absolute; float: right;">+</div>
+       <div id="rem_second_button" class="rem_button" style="margin-top: 10%; margin-left: 4%; position: absolute; float: right;">-</div>
+     </div>
 
-   <button																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	type="button" id="primary_button"/>
+  </div>
 
-  </center>
-  
-  <div style="width: 1px; height: 50px;"></div>
+  <div id="bottom_portion" style="width: 100%; height: 50%;">
+     <div id="home_penalty_container" style="float: left; width: 36%; height: 100%; ">
+       <div id="home_penalty_button_container" style="overflow:hidden; white-space: nowrap; width: 100%; height: 35%; ">
+         <div id="home_timeout_button" class="add_button wide_button" style="float: left; margin-top: 20px; font-size:30px;">AIKALISA</div>
+         <div id="add_home_2min_button" class="add_button largesize_button" style="float: left; margin-top: 20px; margin-left: 10px;">2</div>
+         <div id="add_home_5min_button" class="add_button largesize_button" style="float: left; margin-left: 10px; margin-top: 20px;">5</div>
+       </div>
+       <div id="home_penalty_0_container" style="width: 100%; height: 15%";>
+         <div id="rem_home_penalty_0_button" class="rem_button" style="float: right; margin-right: 100px; margin-top: 2%; text-align: center;">-</div> 
+         <div id="home_penalty_0_time" class="penalty_time_text" style="float: right; margin-top: 2%; margin-right: 30px;"></div>
+       </div>
+       <div id="home_penalty_1_container" style="width: 100%; height: 15%";>
+         <div id="rem_home_penalty_1_button" class="rem_button" style="float: right; margin-right: 100px; margin-top: 2%; text-align: center;">-</div> 
+         <div id="home_penalty_1_time" class="penalty_time_text" style="float: right; margin-top: 2%; margin-right: 30px;"></div>
+       </div>
+       <div id="home_penalty_2_container" style="width: 100%; height: 15%";>
+         <div id="rem_home_penalty_2_button" class="rem_button" style="float: right; margin-right: 100px; margin-top: 2%; text-align: center;">-</div> 
+         <div id="home_penalty_2_time" class="penalty_time_text" style="float: right; margin-top: 2%; margin-right: 30px;"></div>
+       </div>
+       <div id="home_penalty_3_container" style="width: 100%; height: 15%";>
+         <div id="rem_home_penalty_3_button" class="rem_button" style="float: right; margin-right: 100px; margin-top: 2%; text-align: center;">-</div> 
+         <div id="home_penalty_3_time" class="penalty_time_text" style="float: right; margin-top: 2%; margin-right: 30px;"></div>
+       </div>
+       <div id="home_penalty_4_container" style="width: 100%; height: 15%";>
+         <div id="rem_home_penalty_4_button" class="rem_button" style="float: right; margin-right: 100px; margin-top: 2%; text-align: center;">-</div> 
+         <div id="home_penalty_4_time" class="penalty_time_text" style="float: right; margin-top: 2%; margin-right: 30px;"></div>
+       </div>
+     </div>
 
-  <button id="addhomepenalty2" type="button" class="plus_button_extrawide left" onclick="sendCommand('addhomepenalty2');">2 MIN</button>
-  <button id="addhomepenalty5" type="button" class="plus_button_extrawide left" onclick="sendCommand('addhomepenalty5');">5 MIN</button>
-  <button id="addvisitorpenalty5" type="button" class="plus_button_extrawide right" onclick="sendCommand('addvisitorpenalty5');">5 MIN</button>
-  <button id="addvisitorpenalty2" type="button" class="plus_button_extrawide right" onclick="sendCommand('addvisitorpenalty2');">2 MIN</button>
+     <div id="master_button" class="master_button" style="width: 26%; height: 100px; line-height: 100px; float:left;">START</div>
 
-  <div id="spacer_between_penalty_buttons_and_items" style="width: 1px; height: 20px;"></div>
-
-  <table id="penalty_table" style="width: 100%">
-    <tr style="height: 80px">
-      <td style="width: 100px;">
-        <button id="delhomepenalty_0" type="button" class="minus_button left" onclick="sendCommand('delhomepenalty', 0);">-</button>
-      </td>
-      <td id="penalty_home_0" class="penalty_text left" ></td>
-      <td id="penalty_visitor_0" class="penalty_text right"></td>
-      <td style="width: 100px;">
-        <button id="delvisitorpenalty_0" type="button" class="minus_button right" onclick="sendCommand('delvisitorpenalty', 0);">-</button>
-      </td>
-    </tr>
-    <tr style="height: 80px">
-      <td style="width: 100px;">
-        <button id="delhomepenalty_1" type="button" class="minus_button left" onclick="sendCommand('delhomepenalty', 1);">-</button>
-      </td>
-      <td id="penalty_home_1" class="penalty_text left"></td>
-      <td id="penalty_visitor_1" class="penalty_text right"></td>
-      <td style="width: 100px;">
-        <button id="delvisitorpenalty_1" type="button" class="minus_button right" onclick="sendCommand('delvisitorpenalty', 1);">-</button>
-      </td>
-    </tr>
-    <tr style="height: 80px">
-      <td style="width: 100px;">
-        <button id="delhomepenalty_2" type="button" class="minus_button left" onclick="sendCommand('delhomepenalty', 2);">-</button>
-      </td>
-      <td id="penalty_home_2" class="penalty_text left"></td>
-      <td id="penalty_visitor_2" class="penalty_text right"></td>
-      <td style="width: 100px;">
-        <button id="delvisitorpenalty_2" type="button" class="minus_button right" onclick="sendCommand('delvisitorpenalty', 2);">-</button>
-      </td>
-    </tr>
-    <tr style="height: 80px">
-      <td style="width: 100px;">
-        <button id="delhomepenalty_3" type="button" class="minus_button left" onclick="sendCommand('delhomepenalty', 3);">-</button>
-      </td>
-      <td id="penalty_home_3" class="penalty_text left"></td>
-      <td id="penalty_visitor_3" class="penalty_text right"></td>
-      <td style="width: 100px;">
-        <button id="delvisitorpenalty_3" type="button" class="minus_button right" onclick="sendCommand('delvisitorpenalty', 3);">-</button>
-      </td>
-    </tr>
-    <tr style="height: 80px">
-      <td style="width: 100px;">
-        <button id="delhomepenalty_4" type="button" class="minus_button left" onclick="sendCommand('delhomepenalty', 4);">-</button>
-      </td>
-      <td id="penalty_home_4" class="penalty_text left"></td>
-      <td id="penalty_visitor_4" class="penalty_text right"></td>
-      <td style="width: 100px;">
-        <button id="delvisitorpenalty_4" type="button" class="minus_button right" onclick="sendCommand('delvisitorpenalty', 4);">-</button>
-      </td>
-    </tr>
-  </table>
-
-  <button id="hometimeout" type="button" class="plus_button_superwide left" onclick="sendCommand('hometimeout');">AIKALISÄ</button>
-  <button id="visitortimeout" type="button" class="plus_button_superwide right" onclick="sendCommand('visitortimeout');">AIKALISÄ</button>
+     <div id="visitor_penalty_container" style="float: left; width: 36%; height: 100%;">
+       <div id="visitor_penalty_button_container" style="overflow:hidden; white-space: nowrap; width: 100%; height: 35%; ">
+         <div id="visitor_timeout_button" class="add_button wide_button" style="float: right; margin-top: 20px; font-size:30px;">AIKALISA</div>
+         <div id="add_visitor_2min_button" class="add_button largesize_button" style="float: right; margin-top: 20px; margin-right: 10px;">2</div>
+         <div id="add_visitor_5min_button" class="add_button largesize_button" style="float: right; margin-right: 10px; margin-top: 20px;">5</div>
+       </div>
+       <div id="visitor_penalty_0_container" style="width: 100%; height: 15%";>
+         <div id="rem_visitor_penalty_0_button" class="rem_button" style="float: left; margin-left: 100px; margin-top: 2%; text-align: center;">-</div> 
+         <div id="visitor_penalty_0_time" class="penalty_time_text" style="float: left; margin-top: 2%; margin-left: 30px;"></div>
+       </div>
+       <div id="visitor_penalty_1_container" style="width: 100%; height: 15%";>
+         <div id="rem_visitor_penalty_1_button" class="rem_button" style="float: left; margin-left: 100px; margin-top: 2%; text-align: center;">-</div> 
+         <div id="visitor_penalty_1_time" class="penalty_time_text" style="float: left; margin-top: 2%; margin-left: 30px;"></div>
+       </div>
+       <div id="visitor_penalty_2_container" style="width: 100%; height: 15%";>
+         <div id="rem_visitor_penalty_2_button" class="rem_button" style="float: left; margin-left: 100px; margin-top: 2%; text-align: center;">-</div> 
+         <div id="visitor_penalty_2_time" class="penalty_time_text" style="float: left; margin-top: 2%; margin-left: 30px;"></div>
+       </div>
+       <div id="visitor_penalty_3_container" style="width: 100%; height: 15%";>
+         <div id="rem_visitor_penalty_3_button" class="rem_button" style="float: left; margin-left: 100px; margin-top: 2%; text-align: center;">-</div> 
+         <div id="visitor_penalty_3_time" class="penalty_time_text" style="float: left; margin-top: 2%; margin-left: 30px;"></div>
+       </div>
+       <div id="visitor_penalty_4_container" style="width: 100%; height: 15%";>
+         <div id="rem_visitor_penalty_4_button" class="rem_button" style="float: left; margin-left: 100px; margin-top: 2%; text-align: center;">-</div> 
+         <div id="visitor_penalty_4_time" class="penalty_time_text" style="float: left; margin-top: 2%; margin-left: 30px;"></div>
+       </div>
+     </div>
+  </div>
 
 </body>
 </html>
