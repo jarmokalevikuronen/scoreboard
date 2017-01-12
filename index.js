@@ -483,6 +483,7 @@ Game.prototype.startOvertime = function() {
     this.periodelapsed_ms = 0;
     this.periodelapsed_minutes = 0;
     this.periodelapsed_seconds = 0;
+    this.periodlength_ms = this.def.overtime_length_minutes * 60 * 1000;
     this.running = false;
 }
  

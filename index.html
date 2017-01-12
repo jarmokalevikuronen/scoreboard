@@ -111,7 +111,7 @@
       border: 5px solid;
       border-radius: 30px;
       border-color: gray;
-      background-color: green;
+      background-color: #f9313f;
       text-align: center;
     } 
     .master_button_paused {
@@ -120,7 +120,7 @@
       border: 5px solid;
       border-radius: 30px;
       border-color: gray;
-      background-color: red;
+      background-color: #528c10;
       text-align: center;
     } 
     .action_button {
@@ -207,10 +207,18 @@
             ss_button.removeEventListener("click", execPAUSE);
             ss_button.removeEventListener("click", execSKIP);
            if (game.running) {
+                if (!viewerMode()) {
+                    document.body.style.background = "#c9c5c5";
+                }
+                
                 ss_button.textContent = "PAUSE";
                 ss_button.className = "master_button_running";
                 ss_button.addEventListener("click", execPAUSE);
            } else {
+                if (!viewerMode()) {
+                    document.body.style.background = "#efbaba";
+                }
+
                 ss_button.textContent = "START";
                 ss_button.className = "master_button_paused";
                 if (game.state === GAMESTATE_INTERMISSION_1   ||
@@ -251,6 +259,12 @@
                var data = "";
                if (game.homepenalties.length > c) {
                    data = timestring(game.homepenalties[c].remaining_minutes, game.homepenalties[c].remaining_seconds);
+                   showElem(homeElem);
+                   if (!viewerMode())
+                       show("rem_home_penalty_" + c + "_button");
+               } else {
+                   hideElem(homeElem);
+                   hide("rem_home_penalty_" + c + "_button");
                }
                homeElem.textContent = data;
            }
@@ -259,6 +273,12 @@
                var data = "";
                if (game.visitorpenalties.length > c) {
                    data = timestring(game.visitorpenalties[c].remaining_minutes, game.visitorpenalties[c].remaining_seconds);
+                   showElem(visitorElem);
+                   if (!viewerMode())
+                       show("rem_visitor_penalty_" + c + "_button");
+               } else {
+                   hideElem(visitorElem);
+                   hide("rem_visitor_penalty_" + c + "_button");
                }
                visitorElem.textContent = data;
            }
@@ -283,15 +303,34 @@
        }
     }
 
+    function hide(name) {
+        var elem = document.getElementById(name);
+        if (elem !== null) {
+            hideElem(elem);
+        } else {
+            console.log("Element " + id + " not found while hiding.");
+        }
+    }
+
+    function hideElem(elem) {
+        elem.classList.add('hide');
+    }
+
+    function show(name) {
+        var elem = document.getElementById(name);
+        if (elem !== null) {
+            showElem(elem);
+        } else {
+            console.log("Element " + id + " not found while showing.");
+        }
+    }
+
+    function showElem(elem) {
+        elem.classList.remove('hide');
+    }
+
     // Initialize everything when the window finishes loading
     window.addEventListener("load", function(event) {
-
-      function hide(id) {
-          var elem = document.getElementById(id);
-          if (elem !== null) {
-              elem.className += " hide";
-          }
-      }
 
      function link(id,cmd, arg) {
          var elem = document.getElementById(id);
@@ -301,7 +340,7 @@
            } else { 
                 elem.addEventListener('click', function() { sendCommand(cmd); });
            }
-         }
+         } else console.log("link: element: " + elem + " not found");
      }
 
       if (viewerMode()) {
@@ -320,7 +359,7 @@
           hide("rem_home_penalty_3_button");
           hide("rem_home_penalty_4_button");
           hide("add_second_button");
-          hide("rem_second_button");
+          hide("rem_second_button");33
           hide("add_minute_button");
           hide("rem_minute_button");
           hide("add_visitorgoal_button");
@@ -401,110 +440,84 @@
    }
   </script>
 </head>
-<body style="height: 100vh; width: 100vw;">
+<body style="height: 100vh; width: 100vw;" bgcolor="#c9c5c5">
 
   <div id="newgame_sm_button" class="action_button" style="position:fixed; top:5px; left:10px;" onclick="confirm_CreateGame('creategame_c1sm', '(3x20m, 12m erätauko, jatkoaika');">C1-SM</div>
   <div id="newgame_fed_button" class="action_button" style="position:fixed; top:5px; left:125px;" onclick="confirm_CreateGame('creategame_ejun', '(3x15m, 3m erätauko');">F/E/D-Jun</div>
   <div id="newgame_test_button" class="action_button" style="position:fixed; top: 5px; right: 5px;" onclick="confirm_CreateGame('creategame_test', '(3x2m, 1m erätauko, jatkoaika');">TEST</div>
 
-  <div id="title_container" style="width: 100%;">
-     <div id="title_phase" class="title_text" style="text-align: center;"></div>
-  </div>
+  <div id="title_phase" class="title_text" style="height: 5%; margin-left: 25%; width: 50%; text-align:center; position:relative;">PELI EI OLE ALKANUT</div>
 
   <div id="title_goal_spacer" style="width: 100%; height: 10px;" ></div>
 
-  <div id="goal_container" style="margin-left: 5%; width: 90%; height: 25%;">
-    <div id="home_goal_button_container" style="height: 100%; width: 10%; float: left;">
-       <div id="add_homegoal_button" class="add_button_goal" style="margin-top: 2%; position: absolute;">+</div>
-       <div id="rem_homegoal_button" class="rem_button_goal" style="margin-top: 10%; position: absolute;">-</div>
-     </div>
+  <div id="goal_container" style="margin-top: 5%; margin-left: 5%; width: 90%; height: 25%; position: relative;">
+    <div id="add_homegoal_button" class="add_button_goal" style="position: absolute; left: 1%; top: 10%;">+</div>
+    <div id="rem_homegoal_button" class="rem_button_goal" style="position: absolute; left: 1%; top: 55%;">-</div>
 
-    <div id="home_info" class="home_visitor_indicator_text" style="float: left; width: 10%; height:40%; ">K</div>
-    <div id="home_goals" class="home_visitor_goal_text" style="float: left; width: 25%; height: 100%; ">-</div>
+    <div id="home_info" class="home_visitor_indicator_text" style="position: absolute; left: 10%; top: 20%">K</div>
+    <div id="home_goals" class="home_visitor_goal_text" style="position: absolute; left: 20%; top: 5%; ">0</div>
 
-    <div id="visitor_goal_button_container" style="height: 100%; width: 10%; float: right; align:right;">
-       <div id="add_visitorgoal_button" class="add_button_goal" style="margin-top: 2%; margin-left: 3%; position: absolute;">+</div>
-       <div id="rem_visitorgoal_button" class="rem_button_goal" style="margin-top: 10%; margin-left: 3%; position: absolute;">-</div>
-     </div>
+    <div id="add_visitorgoal_button" class="add_button_goal" style="position:absolute; right:1%; top:10%;">+</div>
+    <div id="rem_visitorgoal_button" class="rem_button_goal" style="position:absolute; right:1%; top:55%;">-</div>
 
-    <div id="visitor_info" class="home_visitor_indicator_text" style="float: right; text-align: right; width: 10%; height:40%; ">V</div>
-    <div id="visitor_goals" class="home_visitor_goal_text" style="text-align: right; float: right; width: 25%; height: 100%; ">-</div>
+    <div id="visitor_info" class="home_visitor_indicator_text" style="position:absolute; right:10%; top:20%;">V</div>
+    <div id="visitor_goals" class="home_visitor_goal_text" style="position:absolute; right:20%; top:5%;">0</div>
   </div>
  
-  <div id="time_container" style="height: 25%; width: 100%; ">
-     <div id="time_button_container_minute" style="height: 100%; margin-left: 15%; width: 10%; float: left;">
-       <div id="add_minute_button" class="add_button" style="margin-top: 2%; position: absolute;">+</div>
-       <div id="rem_minute_button" class="rem_button" style="margin-top: 10%; position: absolute;">-</div>
-     </div>
+  <div id="time_container" style="margin-left:5%; height: 25%; width: 90%; position:relative;">
+     <div id="add_minute_button" class="add_button" style="position:absolute; left:18%; top:10%;">+</div>
+     <div id="rem_minute_button" class="rem_button" style="position:absolute; left:18%; top:55%;">-</div>
 
-     <div id="time" class="time_text" style="width: 50%; align: center; text-align: center; float:left;">0:00</div> 
+     <div id="time" class="time_text" style="position:absolute; margin-left:30%;margin-right:30%;left:0;right:0;">0:00</div> 
 
-     <div id="time_button_container_second" style="height: 100%; margin-right: 15%; width: 10%; float: left;">
-       <div id="add_second_button" class="add_button" style="margin-top: 2%; margin-left: 4%; position: absolute; float: right;">+</div>
-       <div id="rem_second_button" class="rem_button" style="margin-top: 10%; margin-left: 4%; position: absolute; float: right;">-</div>
-     </div>
-
+     <div id="add_second_button" class="add_button" style="position:absolute; right:18%; top:10%;">+</div>
+     <div id="rem_second_button" class="rem_button" style="position:absolute; right:18%; top:55%;">-</div>
   </div>
 
-  <div id="bottom_portion" style="width: 100%; height: 50%;">
-     <div id="home_penalty_container" style="float: left; width: 36%; height: 100%; ">
-       <div id="home_penalty_button_container" style="overflow:hidden; white-space: nowrap; width: 100%; height: 35%; ">
-         <div id="home_timeout_button" class="add_button wide_button" style="float: left; margin-top: 20px; font-size:30px;">AIKALISA</div>
-         <div id="add_home_2min_button" class="add_button largesize_button" style="float: left; margin-top: 20px; margin-left: 10px;">2</div>
-         <div id="add_home_5min_button" class="add_button largesize_button" style="float: left; margin-left: 10px; margin-top: 20px;">5</div>
-       </div>
-       <div id="home_penalty_0_container" style="width: 100%; height: 15%";>
-         <div id="rem_home_penalty_0_button" class="rem_button" style="float: right; margin-right: 100px; margin-top: 2%; text-align: center;">-</div> 
-         <div id="home_penalty_0_time" class="penalty_time_text" style="float: right; margin-top: 2%; margin-right: 30px;"></div>
-       </div>
-       <div id="home_penalty_1_container" style="width: 100%; height: 15%";>
-         <div id="rem_home_penalty_1_button" class="rem_button" style="float: right; margin-right: 100px; margin-top: 2%; text-align: center;">-</div> 
-         <div id="home_penalty_1_time" class="penalty_time_text" style="float: right; margin-top: 2%; margin-right: 30px;"></div>
-       </div>
-       <div id="home_penalty_2_container" style="width: 100%; height: 15%";>
-         <div id="rem_home_penalty_2_button" class="rem_button" style="float: right; margin-right: 100px; margin-top: 2%; text-align: center;">-</div> 
-         <div id="home_penalty_2_time" class="penalty_time_text" style="float: right; margin-top: 2%; margin-right: 30px;"></div>
-       </div>
-       <div id="home_penalty_3_container" style="width: 100%; height: 15%";>
-         <div id="rem_home_penalty_3_button" class="rem_button" style="float: right; margin-right: 100px; margin-top: 2%; text-align: center;">-</div> 
-         <div id="home_penalty_3_time" class="penalty_time_text" style="float: right; margin-top: 2%; margin-right: 30px;"></div>
-       </div>
-       <div id="home_penalty_4_container" style="width: 100%; height: 15%";>
-         <div id="rem_home_penalty_4_button" class="rem_button" style="float: right; margin-right: 100px; margin-top: 2%; text-align: center;">-</div> 
-         <div id="home_penalty_4_time" class="penalty_time_text" style="float: right; margin-top: 2%; margin-right: 30px;"></div>
-       </div>
-     </div>
-
-     <div id="master_button" class="master_button" style="width: 26%; height: 100px; line-height: 100px; float:left;">START</div>
-
-     <div id="visitor_penalty_container" style="float: left; width: 36%; height: 100%;">
-       <div id="visitor_penalty_button_container" style="overflow:hidden; white-space: nowrap; width: 100%; height: 35%; ">
-         <div id="visitor_timeout_button" class="add_button wide_button" style="float: right; margin-top: 20px; font-size:30px;">AIKALISA</div>
-         <div id="add_visitor_2min_button" class="add_button largesize_button" style="float: right; margin-top: 20px; margin-right: 10px;">2</div>
-         <div id="add_visitor_5min_button" class="add_button largesize_button" style="float: right; margin-right: 10px; margin-top: 20px;">5</div>
-       </div>
-       <div id="visitor_penalty_0_container" style="width: 100%; height: 15%";>
-         <div id="rem_visitor_penalty_0_button" class="rem_button" style="float: left; margin-left: 100px; margin-top: 2%; text-align: center;">-</div> 
-         <div id="visitor_penalty_0_time" class="penalty_time_text" style="float: left; margin-top: 2%; margin-left: 30px;"></div>
-       </div>
-       <div id="visitor_penalty_1_container" style="width: 100%; height: 15%";>
-         <div id="rem_visitor_penalty_1_button" class="rem_button" style="float: left; margin-left: 100px; margin-top: 2%; text-align: center;">-</div> 
-         <div id="visitor_penalty_1_time" class="penalty_time_text" style="float: left; margin-top: 2%; margin-left: 30px;"></div>
-       </div>
-       <div id="visitor_penalty_2_container" style="width: 100%; height: 15%";>
-         <div id="rem_visitor_penalty_2_button" class="rem_button" style="float: left; margin-left: 100px; margin-top: 2%; text-align: center;">-</div> 
-         <div id="visitor_penalty_2_time" class="penalty_time_text" style="float: left; margin-top: 2%; margin-left: 30px;"></div>
-       </div>
-       <div id="visitor_penalty_3_container" style="width: 100%; height: 15%";>
-         <div id="rem_visitor_penalty_3_button" class="rem_button" style="float: left; margin-left: 100px; margin-top: 2%; text-align: center;">-</div> 
-         <div id="visitor_penalty_3_time" class="penalty_time_text" style="float: left; margin-top: 2%; margin-left: 30px;"></div>
-       </div>
-       <div id="visitor_penalty_4_container" style="width: 100%; height: 15%";>
-         <div id="rem_visitor_penalty_4_button" class="rem_button" style="float: left; margin-left: 100px; margin-top: 2%; text-align: center;">-</div> 
-         <div id="visitor_penalty_4_time" class="penalty_time_text" style="float: left; margin-top: 2%; margin-left: 30px;"></div>
-       </div>
-     </div>
+  <div id="spacer" style="height:5%; width:100%; position:relative;">
   </div>
 
+  <div id="bottom_portion" style="width: 90%; margin-left:5%; height: 42%; overflow:hidden; position:relative;">
+    <div id="home_timeout_button" class="add_button wide_button" style="position:absolute; left:0.5%; top: 1%; font-size:30px;">AIKALISA</div>
+    <div id="add_home_2min_button" class="add_button largesize_button" style="position:absolute; left:20%; top:1%;">2</div>
+    <div id="add_home_5min_button" class="add_button largesize_button" style="position:absolute; left:30%; top:1%;"">5</div>
+
+    <div id="rem_home_penalty_0_button" class="rem_button" style="position:absolute; left:2%; top: 22%;">-</div> 
+    <div id="home_penalty_0_time" class="penalty_time_text" style="position:absolute; left:10%; top: 22%;"></div>
+
+    <div id="rem_home_penalty_1_button" class="rem_button" style="position:absolute; left:2%; top: 42%;">-</div> 
+    <div id="home_penalty_1_time" class="penalty_time_text" style="position:absolute; left:10%; top: 42%;"></div>
+
+    <div id="rem_home_penalty_2_button" class="rem_button" style="position:absolute; left:2%; top: 62%;">-</div> 
+    <div id="home_penalty_2_time" class="penalty_time_text" style="position:absolute; left:10%; top: 62%;"></div>
+
+    <div id="rem_home_penalty_3_button" class="rem_button" style="position:absolute; left:2%; top: 82%;">-</div> 
+    <div id="home_penalty_3_time" class="penalty_time_text" style="position:absolute; left:10%; top: 82%;"></div>
+
+    <div id="rem_home_penalty_4_button" class="rem_button" style="position:absolute; left:2%; top: 102%;">-</div> 
+    <div id="home_penalty_4_time" class="penalty_time_text" style="position:absolute; left:10%; top: 102%;"></div>
+
+    <div id="visitor_timeout_button" class="add_button wide_button" style="position:absolute; right:0.5%; top: 1%; font-size:30px;">AIKALISA</div>
+    <div id="add_visitor_2min_button" class="add_button largesize_button" style="position:absolute; right:20%; top:1%;">2</div>
+    <div id="add_visitor_5min_button" class="add_button largesize_button" style="position:absolute; right:30%; top:1%;">5</div>
+
+    <div id="rem_visitor_penalty_0_button" class="rem_button" style="position:absolute; right:2%; top: 22%;">-</div> 
+    <div id="visitor_penalty_0_time" class="penalty_time_text" style="position:absolute; right:10%; top: 22%;"></div>
+
+    <div id="rem_visitor_penalty_1_button" class="rem_button" style="position:absolute; right:2%; top: 42%;">-</div> 
+    <div id="visitor_penalty_1_time" class="penalty_time_text" style="position:absolute; right:10%; top: 42%;"></div>
+
+    <div id="rem_visitor_penalty_2_button" class="rem_button" style="position:absolute; right:2%; top: 62%;">-</div> 
+    <div id="visitor_penalty_2_time" class="penalty_time_text" style="position:absolute; right:10%; top: 62%;"></div>
+
+    <div id="rem_visitor_penalty_3_button" class="rem_button" style="position:absolute; right:2%; top: 82%;">-</div> 
+    <div id="visitor_penalty_3_time" class="penalty_time_text" style="position:absolute; right:10%; top: 82%;"></div>
+
+    <div id="rem_visitor_penalty_4_button" class="rem_button" style="position:absolute; right:2%; top: 102%;">-</div> 
+    <div id="visitor_penalty_4_time" class="penalty_time_text" style="position:absolute; right:10%; top: 102%;"></div>
+
+    <div id="master_button" class="master_button" style="position: absolute; top: 2%;margin-left:38%;margin-right:38%;left:0;right:0;">START</div>
+
+  </div>
 </body>
 </html>
