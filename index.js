@@ -36,8 +36,8 @@ function GameDef_C1SM() {
     this.timeout_length_sec = 30;
     this.overtime_enabled = true;
     this.overtime_length_minutes = 5;
+    this.special_cycling_for_juhis = false;
 }
-
 
 function GameDef_EJUN() {
     this.periods = 3;
@@ -46,15 +46,17 @@ function GameDef_EJUN() {
     this.timeout_length_sec = 30;
     this.overtime_enabled = false;
     this.overtime_length_minutes = 0;
+    this.special_cycling_for_juhis = false;
 }
 
 function GameDef_TEST() {
-    this.periods = 3;
-    this.period_length_minutes = 2;
-    this.intermission_length_minutes = 1;
+    this.periods = 1;
+    this.period_length_minutes = 12;
+    this.intermission_length_minutes = 3;
     this.timeout_length_sec = 30;
-    this.overtime_enabled = true;
-    this.overtime_length_minutes = 5;
+    this.overtime_enabled = false;
+    this.overtime_length_minutes = 0;
+    this.special_cycling_for_juhis = true;
 }
 
 
@@ -107,7 +109,7 @@ var GAMESTATE_OVERTIME		=	"JATKOAIKA"
 var GAMESTATE_FINISHED		=	"PELI PAATTYNYT"
 var GAMESTATE_TIMEOUT_VISITOR	=	"AIKALISA VIERAS"
 var GAMESTATE_TIMEOUT_HOME	=	"AIKALISA KOTI"
-
+var GAMESTATE_GAMEPAUSE         =       "PELITAUKO"
 
 function Game(def) {
     this.def = def;
@@ -161,12 +163,7 @@ Game.prototype.transferState = function(oldstate, newstate) {
     return false;
 }
 
-Game.prototype.canAddPenalty = function() {
-    if (this.running === true) {
-        myLOG("cannot add penalty while running");
-        return false;
-    }
-    
+Game.prototype.canAddPenalty = function() {    
     switch (this.state) {
         case GAMESTATE_TIMEOUT_HOME:
         case GAMESTATE_TIMEOUT_VISITOR:
@@ -398,7 +395,12 @@ Game.prototype.rewindIntermission = function(milliseconds, cb) {
 
 Game.prototype.endThisIntermission = function() {
     if (this.state === GAMESTATE_INTERMISSION_1) {
-        this.startPeriod(GAMESTATE_PERIOD_2);
+        if (this.def.special_cycling_for_juhis === true) {
+            theGAME = new Game(new GameDef_TEST());
+            sendStateToClients();               
+        } else {
+            this.startPeriod(GAMESTATE_PERIOD_2);
+        }
     } else if (this.state == GAMESTATE_INTERMISSION_2) {
         this.startPeriod(GAMESTATE_PERIOD_3);
     }
@@ -721,8 +723,13 @@ function gameProceed(increment_ms) {
 
 	case GAMESTATE_INTERMISSION_1:
             if (theGAME.rewindIntermission(ms + timetrackerintermission.elapsedAndStart(), sendStateToClients) === true) {
-                theGAME.startPeriod(GAMESTATE_PERIOD_2);
-                sendStateToClients();
+                if (theGAME.def.special_cycling_for_juhis === true) {
+                    theGAME = new Game(new GameDef_TEST());
+                    sendStateToClients();               
+                } else {
+                    theGAME.startPeriod(GAMESTATE_PERIOD_2);
+                    sendStateToClients();
+                }
             }
         break;
 

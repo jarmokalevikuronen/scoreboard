@@ -4,34 +4,238 @@
   <title>Salibandy tulostaulu v0.1</title>
   <meta charset="UTF-8" />
   <style>
+ 
+    .pressable {
+      cursor: pointer;
+    }
 
     .hide {
       visibility:hidden;
     }
+
+    .bottom_button_portion {
+      width: 90%;
+      margin-left: 5%;
+      height: 13%;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bottom_button_portion_viewer {
+      width: 90%;
+      margin-left: 5%;
+      height: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bottom_button_portion_720p {
+      width: 90%;
+      margin-left: 5%;
+      height: 12%;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bottom_button_portion_1080p {
+      width: 90%;
+      margin-left: 5%;
+      height: 10%;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bottom_button_portion_720p_viewer {
+      width: 90%;
+      margin-left: 5%;
+      height: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bottom_button_portion_1080p_viewer {
+      width: 90%;
+      margin-left: 5%;
+      height: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
     .penalty_time_text {
       color: black;
       font-size: 3em;
       font-weight: bold;
       text-align: left;
     }
+
+    .penalty_time_text_viewer {
+      color: black;
+      font-size: 3em;
+      font-weight: bold;
+      text-align: left;
+    }
+
+    .penalty_time_text_720p {
+      color: black;
+      font-size: 3em;
+      font-weight: bold;
+      text-align: left;
+    }
+
+    .penalty_time_text_720p_viewer {
+      color: black;
+      font-size: 3em;
+      font-weight: bold;
+      text-align: left;
+    }
+
+    .penalty_time_text_1080p {
+      color: black;
+      font-size: 5em;
+      font-weight: bold;
+      text-align: left;
+    }
+
+    .penalty_time_text_1080p_viewer {
+      color: black;
+      font-size: 7em;
+      font-weight: bold;
+      text-align: left;
+    }
+
+
     .title_text {
       color: black;
       font-size: 4em;
       font-weight: bold;
     }
+
     .home_visitor_indicator_text {
       color: black;
       font-size: 4em;
     }
+
+    .home_visitor_indicator_text_viewer {
+      color: black;
+      font-size: 4em;
+    }
+
+    .home_visitor_indicator_text_720p {
+      color: black;
+      font-size: 3em;
+    }
+
+    .home_visitor_indicator_text_1080p {
+      color: black;
+      font-size: 4em;
+    }
+
+    .home_visitor_indicator_text_720p_viewer {
+      color: black;
+      font-size: 3em;
+    }
+
+    .home_visitor_indicator_text_1080p_viewer {
+      color: black;
+      font-size: 4em;
+    }
+
     .home_visitor_goal_text {
       color: black;
-      font-size: 8em;
+      font-size: 13em;
     }
+
+    .home_visitor_goal_text_viewer {
+      color: black;
+      font-size: 13em;
+    }
+
+    .home_visitor_goal_text_720p {
+      color: black;
+      font-size: 10em;
+    }
+
+    .home_visitor_goal_text_720p_viewer {
+      color: black;
+      font-size: 9em;
+    }
+
+    .home_visitor_goal_text_1080p {
+      color: black;
+      font-size: 13em;
+    }
+
+    .home_visitor_goal_text_1080p_viewer {
+      color: black;
+      font-size: 13em;
+    }
+
     .time_text {
       text-align: center;
       font-weight: bold;
-      font-size: 10em;
+      font-size: 16em;
+      position: absolute;
+      margin-left: 25%;
+      margin-right: 25%;
+      left: 0;
+      right: 0;
     }
+
+    .time_text_viewer {
+      text-align: center;
+      font-weight: bold;
+      font-size: 20em;
+      position: absolute;
+      margin-left: 25%;
+      margin-right: 25%;
+      left: 0;
+      right: 0;
+    }
+
+    .time_text_720p {
+      text-align: center;
+      font-weight: bold;
+      font-size: 16em;
+      position: absolute;
+      margin-left: 15%;
+      margin-right: 15%;
+      left: 0;
+      right: 0;
+    }
+
+    .time_text_720p_viewer {
+      text-align: center;
+      font-weight: bold;
+      font-size: 15em;
+      position: absolute;
+      margin-left: 15%;
+      margin-right: 15%;
+      left: 0;
+      right: 0;
+    }
+
+    .time_text_1080p {
+      text-align: center;
+      font-weight: bold;
+      font-size: 20em;
+      position: absolute;
+      margin-left: 20%;
+      margin-right: 20%;
+      left: 0;
+      right: 0;
+    }
+
+    .time_text_1080p_viewer {
+      text-align: center;
+      font-weight: bold;
+      font-size: 24em;
+      position: absolute;
+      margin-left: 20%;
+      margin-right: 20%;
+      left: 0;
+      right: 0;
+    }
+
     .add_button {
       font-weight: bold;
       font-size: 50px;
@@ -45,6 +249,35 @@
       vertical-align: middle;
       text-align: center;
     }
+
+    .add_button_720p {
+      font-weight: bold;
+      font-size: 50px;
+      border: 4px solid;
+      border-color: gray;
+      border-radius: 20px;
+      background-color: green;
+      width: 60px;
+      height: 40px;
+      line-height: 40px;
+      vertical-align: middle;
+      text-align: center;
+    }
+
+    .add_button_1080p {
+      font-weight: bold;
+      font-size: 50px;
+      border: 4px solid;
+      border-color: gray;
+      border-radius: 20px;
+      background-color: green;
+      width: 90px;
+      height: 60px;
+      line-height: 60px;
+      vertical-align: middle;
+      text-align: center;
+    }
+
     .rem_button {
       font-weight: bold;
       font-size: 50px;
@@ -58,6 +291,35 @@
       vertical-align: middle;
       text-align: center;
     }
+
+    .rem_button_720p {
+      font-weight: bold;
+      font-size: 50px;
+      border: 4px solid;
+      border-color: gray;
+      border-radius: 20px;
+      background-color: red;
+      width: 60px;
+      height: 40px;
+      line-height: 30px;
+      vertical-align: middle;
+      text-align: center;
+    }
+
+    .rem_button_1080p {
+      font-weight: bold;
+      font-size: 50px;
+      border: 4px solid;
+      border-color: gray;
+      border-radius: 20px;
+      background-color: red;
+      width: 90px;
+      height: 60px;
+      line-height: 50px;
+      vertical-align: middle;
+      text-align: center;
+    }
+
     .add_button_goal {
       font-weight: bold;
       font-size: 50px;
@@ -67,7 +329,7 @@
       background-color: green;
       width: 50px;
       height: 50px;
-      line-height: 40px;
+      line-height: 50px;
       vertical-align: middle;
       text-align: center;
     }
@@ -80,7 +342,7 @@
       background-color: red;
       width: 50px;
       height: 50px;
-      line-height: 40px;
+      line-height: 50px;
       vertical-align: middle;
       text-align: center;
     }
@@ -94,7 +356,7 @@
       width: 160px; 
       height: 60px;
       line-height: 60px;
-      border-radius: 30px;
+      border-radius: 10px;
     }
     .master_button {
       font-size: 4em;
@@ -135,6 +397,13 @@
       font-weight: bold;
     }
 
+
+    .section_background {
+      background-color: lightgray;
+      border-radius: 10px;
+      border-color: black;
+      border-width: 2px solid;
+    }
   </style>
 
   <script>
@@ -143,15 +412,65 @@
 
     // NOTE: node.js changes this to __MANAGER__ shall we be in manager mode instead.
     var mode = "__VIEWER__";
+    var displaymodepostfix = null;
+
+    function fixStateString(game) {
+        if (game.state === GAMESTATE_INTERMISSION_1 && game.def.special_cycling_for_juhis === true) {
+            return "PELITAUKO";	
+        }
+/*      switch (str) {
+        case GAMESTATE_PERIOD_1:          return "1. ERÄ";
+        case GAMESTATE_PERIOD_2:          return "2. ERÄ";
+        case GAMESTATE_PERIOD_3:          return "3. ERÄ";
+        case GAMESTATE_INTERMISSION_1:    return "1. ERÄTAUKO";
+        case GAMESTATE_INTERMISSION_2:    return "2. ERÄTAUKO";
+        case GAMESTATE_FINISHED:          return "PELI PÄÄTTYNYT";
+        case GAMESTATE_TIMEOUT_VISITOR:   return "AIKALISÄ VIERAS";
+        case GAMESTATE_TIMEOUT_HOME:      return "AIKALISÄ KOTI";      
+      }*/
+
+      return game.state;
+    }
 
     function viewerMode() {
         return mode === "__VIEWER__";
     }
+  
+    function displayModePostfix() {
+        if (displaymodepostfix !== null) {
+            return displaymodepostfix;
+        }
 
-    if (viewerMode()) {
-        console.log("VIEWER MODE");
-    } else {
-        console.log("MANAGER MODE");
+        var w = window,
+            d = document,
+            e = d.documentElement,
+            g = d.getElementsByTagName('body')[0],
+            x = w.innerWidth || e.clientWidth || g.clientWidth,
+            y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+
+        if (parseInt(y) >= 1080) {
+            displaymodepostfix = "_1080p";
+
+        } else if (parseInt(y) >= 720) {
+            displaymodepostfix = "_720p";
+        } else {
+            displaymodepostfix = "";
+        }
+
+        console.log("displayModePostfix = " + displaymodepostfix);
+
+        return displaymodepostfix;
+    }
+
+    function controlModePostfix() {
+        if (viewerMode()) {
+            return "_viewer";
+        }
+        return "";
+    }
+
+    function sizefyClassName(clsName) {
+        return clsName + displayModePostfix() + controlModePostfix();
     }
 
     var GAMESTATE_NOTSTARTED		=	"PELI EI OLE ALKANUT"
@@ -187,8 +506,13 @@
 
         var state_title = document.getElementById("title_phase");
         if (state_title !== null) {
-            state_title.textContent = game.state;
+            state_title.textContent = fixStateString(game);
         }
+
+
+        if (game.state === GAMESTATE_FINISHED) {
+            hide('master_button');
+        } else show('master_button');
 
         var time_text = document.getElementById("time");
         if (time_text !== null) {
@@ -284,12 +608,138 @@
            }
        }
     }
+   
+    function updateButtonVisibility(game) {
+        if (viewerMode()) {
+            return;
+        }
 
+        switch (game.state) {
+            default:
+            case GAMESTATE_PERIOD_1:
+            case GAMESTATE_PERIOD_2:
+            case GAMESTATE_PERIOD_3:
+            case GAMESTATE_OVERTIME:
+                show('master_button');
+
+                show('add_homegoal_button');
+                show('add_visitorgoal_button');
+                show('rem_homegoal_button');
+                show('rem_visitorgoal_button');
+
+                show('add_minute_button');
+                show('add_second_button');
+                show('rem_minute_button');
+                show('rem_second_button');
+
+		show('add_home_2min_button');
+                show('add_home_5min_button');
+                show('add_visitor_2min_button');
+                show('add_visitor_5min_button');
+
+                if (!game.running) {
+                    show('visitor_timeout_button');
+                    show('home_timeout_button');
+                } else {
+                    hide('visitor_timeout_button');
+                    hide('home_timeout_button');
+                }
+            break;
+
+            case GAMESTATE_TIMEOUT_VISITOR:
+            case GAMESTATE_TIMEOUT_HOME:
+                show('master_button');
+
+                hide('add_homegoal_button');
+                hide('add_visitorgoal_button');
+                hide('rem_homegoal_button');
+                hide('rem_visitorgoal_button');
+
+                hide('add_minute_button');
+                hide('add_second_button');
+                hide('rem_minute_button');
+                hide('rem_second_button');
+
+	        hide('add_home_2min_button');
+                hide('add_home_5min_button');
+                hide('add_visitor_2min_button');
+                hide('add_visitor_5min_button');
+
+                hide('visitor_timeout_button');
+                hide('home_timeout_button');
+            break;
+
+            case GAMESTATE_FINISHED:
+                hide('master_button');
+
+                hide('add_homegoal_button');
+                hide('add_visitorgoal_button');
+                hide('rem_homegoal_button');
+                hide('rem_visitorgoal_button');
+
+                hide('add_minute_button');
+                hide('add_second_button');
+                hide('rem_minute_button');
+                hide('rem_second_button');
+
+		hide('add_home_2min_button');
+                hide('add_home_5min_button');
+                hide('add_visitor_2min_button');
+                hide('add_visitor_5min_button');
+            break;
+
+            case GAMESTATE_INTERMISSION_1:
+            case GAMESTATE_INTERMISSION_2:
+                hide('add_homegoal_button');
+                hide('add_visitorgoal_button');
+                hide('rem_homegoal_button');
+                hide('rem_visitorgoal_button');
+
+                hide('add_minute_button');
+                hide('add_second_button');
+                hide('rem_minute_button');
+                hide('rem_second_button');
+
+		show('add_home_2min_button');
+                show('add_home_5min_button');
+                show('add_visitor_2min_button');
+                show('add_visitor_5min_button');
+
+                hide('visitor_timeout_button');
+                hide('home_timeout_button');
+            break;
+
+            case GAMESTATE_NOTSTARTED:
+                hide('add_homegoal_button');
+                hide('add_visitorgoal_button');
+                hide('rem_homegoal_button');
+                hide('rem_visitorgoal_button');
+
+                hide('add_minute_button');
+                hide('add_second_button');
+                hide('rem_minute_button');
+                hide('rem_second_button');
+
+		hide('add_home_2min_button');
+                hide('add_home_5min_button');
+                hide('add_visitor_2min_button');
+                hide('add_visitor_5min_button');
+
+                hide('visitor_timeout_button');
+                hide('home_timeout_button');
+
+            break;
+        }
+
+    }
+
+ 
     function updateState(game) {
         updateStateText(game);
         updateHomeGoals(game);
         updateVisitorGoals(game);
         updatePenalties(game);
+        updateButtonVisibility(game);
     }
 
     function sendCommand(command, arg) {
@@ -329,6 +779,19 @@
         elem.classList.remove('hide');
     }
 
+    function fixElementSize(name, cls) {
+       var elem = document.getElementById(name);
+       if (elem === null) {
+           return;
+       }
+       var newClass = sizefyClassName(cls);
+       
+       if (newClass !== cls) {
+           elem.classList.remove(cls);
+           elem.classList.add(newClass);
+       }
+    }
+
     // Initialize everything when the window finishes loading
     window.addEventListener("load", function(event) {
 
@@ -337,13 +800,65 @@
          if (elem !== null) {
            if (arg !== undefined) {
                 elem.addEventListener('click', function() { sendCommand(cmd, arg); });
+                elem.classList.add('pressable');
            } else { 
                 elem.addEventListener('click', function() { sendCommand(cmd); });
+                elem.classList.add('pressable');
            }
          } else console.log("link: element: " + elem + " not found");
      }
 
-      if (viewerMode()) {
+
+     fixElementSize('home_penalty_0_time', 'penalty_time_text');
+     fixElementSize('home_penalty_1_time', 'penalty_time_text');
+     fixElementSize('home_penalty_2_time', 'penalty_time_text');
+     fixElementSize('home_penalty_3_time', 'penalty_time_text');
+     fixElementSize('visitor_penalty_0_time', 'penalty_time_text');
+     fixElementSize('visitor_penalty_1_time', 'penalty_time_text');
+     fixElementSize('visitor_penalty_2_time', 'penalty_time_text');
+     fixElementSize('visitor_penalty_3_time', 'penalty_time_text');
+  
+     fixElementSize('time', 'time_text');
+
+     fixElementSize('bottom_button_portion', 'bottom_button_portion');
+    
+
+     fixElementSize('add_minute_button', 'add_button');
+     fixElementSize('add_second_button', 'add_button');
+     fixElementSize('rem_minute_button', 'rem_button');
+     fixElementSize('rem_second_button', 'rem_button');
+
+     fixElementSize('home_goals', 'home_visitor_goal_text');
+     fixElementSize('visitor_goals', 'home_visitor_goal_text');
+
+     fixElementSize('visitor_info', 'home_visitor_indicator_text');
+     fixElementSize('home_info', 'home_visitor_indicator_text');
+
+     fixElementSize('add_homegoal_button', 'add_button');
+     fixElementSize('add_visitorgoal_button', 'add_button');
+
+     fixElementSize('rem_homegoal_button', 'rem_button');
+     fixElementSize('rem_visitorgoal_button', 'rem_button');
+
+     fixElementSize('add_home_2min_button', 'add_button');
+     fixElementSize('add_home_5min_button', 'add_button');
+     fixElementSize('add_visitor_2min_button', 'add_button');
+     fixElementSize('add_visitor_5min_button', 'add_button');
+
+     fixElementSize('rem_home_penalty_0_button', 'rem_button');
+     fixElementSize('rem_home_penalty_1_button', 'rem_button');
+     fixElementSize('rem_home_penalty_2_button', 'rem_button');
+     fixElementSize('rem_home_penalty_3_button', 'rem_button');
+     fixElementSize('rem_visitor_penalty_0_button', 'rem_button');
+     fixElementSize('rem_visitor_penalty_1_button', 'rem_button');
+     fixElementSize('rem_visitor_penalty_2_button', 'rem_button');
+     fixElementSize('rem_visitor_penalty_3_button', 'rem_button');
+
+     if (displayModePostfix().length <= 0) {
+        hide('top_background');
+     }
+
+     if (viewerMode()) {
           hide("add_visitor_2min_button");
           hide("add_visitor_5min_button");
           hide("add_home_2min_button");
@@ -352,14 +867,12 @@
           hide("rem_visitor_penalty_1_button");
           hide("rem_visitor_penalty_2_button");
           hide("rem_visitor_penalty_3_button");
-          hide("rem_visitor_penalty_4_button");
           hide("rem_home_penalty_0_button");
           hide("rem_home_penalty_1_button");
           hide("rem_home_penalty_2_button");
           hide("rem_home_penalty_3_button");
-          hide("rem_home_penalty_4_button");
           hide("add_second_button");
-          hide("rem_second_button");33
+          hide("rem_second_button");
           hide("add_minute_button");
           hide("rem_minute_button");
           hide("add_visitorgoal_button");
@@ -380,12 +893,10 @@
           link("rem_visitor_penalty_1_button", "delvisitorpenalty", 1);
           link("rem_visitor_penalty_2_button", "delvisitorpenalty", 2);
           link("rem_visitor_penalty_3_button", "delvisitorpenalty", 3);
-          link("rem_visitor_penalty_4_button", "delvisitorpenalty", 4);
           link("rem_home_penalty_0_button", "delhomepenalty", 0);
           link("rem_home_penalty_1_button", "delhomepenalty", 1);
           link("rem_home_penalty_2_button", "delhomepenalty", 2);
           link("rem_home_penalty_3_button", "delhomepenalty", 3);
-          link("rem_home_penalty_4_button", "delhomepenalty", 4);
           link("add_second_button", "incsec");
           link("rem_second_button", "decsec");
           link("add_minute_button", "incmin");
@@ -442,82 +953,78 @@
 </head>
 <body style="height: 100vh; width: 100vw;" bgcolor="#c9c5c5">
 
-  <div id="newgame_sm_button" class="action_button" style="position:fixed; top:5px; left:10px;" onclick="confirm_CreateGame('creategame_c1sm', '(3x20m, 12m erätauko, jatkoaika');">C1-SM</div>
-  <div id="newgame_fed_button" class="action_button" style="position:fixed; top:5px; left:125px;" onclick="confirm_CreateGame('creategame_ejun', '(3x15m, 3m erätauko');">F/E/D-Jun</div>
-  <div id="newgame_test_button" class="action_button" style="position:fixed; top: 5px; right: 5px;" onclick="confirm_CreateGame('creategame_test', '(3x2m, 1m erätauko, jatkoaika');">TEST</div>
+  <div id="top_background" class="section_background" style="position:fixed; top:1%;left:5%;width:90%;height:30%;"></div>
+
+  <div id="newgame_sm_button" class="action_button pressable" style="position:fixed; top:5px; left:10px;" onclick="confirm_CreateGame('creategame_c1sm', '(3x20m, 12m eratauko, jatkoaika');">C1-SM</div>
+  <div id="newgame_fed_button" class="action_button pressable" style="position:fixed; top:5px; left:125px;" onclick="confirm_CreateGame('creategame_ejun', '(3x15m, 3m eratauko');">F/E/D-Jun</div>
+  <div id="newgame_test_button" class="action_button pressable" style="position:fixed; top: 5px; right: 5px;" onclick="confirm_CreateGame('creategame_test', '(12min peli, 3 min pelitauko ennen uutta pelia');">Juhis 08</div>
 
   <div id="title_phase" class="title_text" style="height: 5%; margin-left: 25%; width: 50%; text-align:center; position:relative;">PELI EI OLE ALKANUT</div>
 
   <div id="title_goal_spacer" style="width: 100%; height: 10px;" ></div>
-
-  <div id="goal_container" style="margin-top: 5%; margin-left: 5%; width: 90%; height: 25%; position: relative;">
-    <div id="add_homegoal_button" class="add_button_goal" style="position: absolute; left: 1%; top: 10%;">+</div>
-    <div id="rem_homegoal_button" class="rem_button_goal" style="position: absolute; left: 1%; top: 55%;">-</div>
+ 
+  <div id="goal_container" style="margin-top: 1%; margin-left: 5%; width: 90%; height: 20%; position: relative;">
+    <div id="add_homegoal_button" class="add_button" style="position: absolute; left: 1%; top: 20%;">+</div>
+    <div id="rem_homegoal_button" class="rem_button" style="position: absolute; left: 1%; top: 55%;">-</div>
 
     <div id="home_info" class="home_visitor_indicator_text" style="position: absolute; left: 10%; top: 20%">K</div>
     <div id="home_goals" class="home_visitor_goal_text" style="position: absolute; left: 20%; top: 5%; ">0</div>
 
-    <div id="add_visitorgoal_button" class="add_button_goal" style="position:absolute; right:1%; top:10%;">+</div>
-    <div id="rem_visitorgoal_button" class="rem_button_goal" style="position:absolute; right:1%; top:55%;">-</div>
+    <div id="add_visitorgoal_button" class="add_button" style="position:absolute; right:4%; top:20%;">+</div>
+    <div id="rem_visitorgoal_button" class="rem_button" style="position:absolute; right:4%; top:55%;">-</div>
 
-    <div id="visitor_info" class="home_visitor_indicator_text" style="position:absolute; right:10%; top:20%;">V</div>
+    <div id="visitor_info" class="home_visitor_indicator_text" style="position:absolute; right:12%; top:20%;">V</div>
     <div id="visitor_goals" class="home_visitor_goal_text" style="position:absolute; right:20%; top:5%;">0</div>
   </div>
  
-  <div id="time_container" style="margin-left:5%; height: 25%; width: 90%; position:relative;">
-     <div id="add_minute_button" class="add_button" style="position:absolute; left:18%; top:10%;">+</div>
-     <div id="rem_minute_button" class="rem_button" style="position:absolute; left:18%; top:55%;">-</div>
+  <div id="time_container" style="margin-left:5%; height: 35%; width: 90%; position:relative;">
 
-     <div id="time" class="time_text" style="position:absolute; margin-left:30%;margin-right:30%;left:0;right:0;">0:00</div> 
+     <div id="time" class="time_text">0:00</div> 
 
-     <div id="add_second_button" class="add_button" style="position:absolute; right:18%; top:10%;">+</div>
-     <div id="rem_second_button" class="rem_button" style="position:absolute; right:18%; top:55%;">-</div>
+     <div id="add_minute_button" class="add_button" style="position:absolute; left:18%; top:20%;">+</div>
+     <div id="rem_minute_button" class="rem_button" style="position:absolute; left:18%; top:45%;">-</div>
+
+     <div id="add_second_button" class="add_button" style="position:absolute; right:18%; top:20%;">+</div>
+     <div id="rem_second_button" class="rem_button" style="position:absolute; right:18%; top:45%;">-</div>
   </div>
 
-  <div id="spacer" style="height:5%; width:100%; position:relative;">
-  </div>
-
-  <div id="bottom_portion" style="width: 90%; margin-left:5%; height: 42%; overflow:hidden; position:relative;">
+  <div id="bottom_button_portion" class="bottom_button_portion">
     <div id="home_timeout_button" class="add_button wide_button" style="position:absolute; left:0.5%; top: 1%; font-size:30px;">AIKALISA</div>
-    <div id="add_home_2min_button" class="add_button largesize_button" style="position:absolute; left:20%; top:1%;">2</div>
-    <div id="add_home_5min_button" class="add_button largesize_button" style="position:absolute; left:30%; top:1%;"">5</div>
-
-    <div id="rem_home_penalty_0_button" class="rem_button" style="position:absolute; left:2%; top: 22%;">-</div> 
-    <div id="home_penalty_0_time" class="penalty_time_text" style="position:absolute; left:10%; top: 22%;"></div>
-
-    <div id="rem_home_penalty_1_button" class="rem_button" style="position:absolute; left:2%; top: 42%;">-</div> 
-    <div id="home_penalty_1_time" class="penalty_time_text" style="position:absolute; left:10%; top: 42%;"></div>
-
-    <div id="rem_home_penalty_2_button" class="rem_button" style="position:absolute; left:2%; top: 62%;">-</div> 
-    <div id="home_penalty_2_time" class="penalty_time_text" style="position:absolute; left:10%; top: 62%;"></div>
-
-    <div id="rem_home_penalty_3_button" class="rem_button" style="position:absolute; left:2%; top: 82%;">-</div> 
-    <div id="home_penalty_3_time" class="penalty_time_text" style="position:absolute; left:10%; top: 82%;"></div>
-
-    <div id="rem_home_penalty_4_button" class="rem_button" style="position:absolute; left:2%; top: 102%;">-</div> 
-    <div id="home_penalty_4_time" class="penalty_time_text" style="position:absolute; left:10%; top: 102%;"></div>
-
+    <div id="add_home_2min_button" class="add_button" style="position:absolute; left:20%; top:1%;">2</div>
+    <div id="add_home_5min_button" class="add_button" style="position:absolute; left:30%; top:1%;"">5</div>
+    <div id="master_button" class="master_button" style="cursor: pointer; position: absolute; top: 2%;margin-left:38%;margin-right:38%;left:0;right:0;">START</div>
     <div id="visitor_timeout_button" class="add_button wide_button" style="position:absolute; right:0.5%; top: 1%; font-size:30px;">AIKALISA</div>
-    <div id="add_visitor_2min_button" class="add_button largesize_button" style="position:absolute; right:20%; top:1%;">2</div>
-    <div id="add_visitor_5min_button" class="add_button largesize_button" style="position:absolute; right:30%; top:1%;">5</div>
+    <div id="add_visitor_2min_button" class="add_button" style="position:absolute; right:20%; top:1%;">2</div>
+    <div id="add_visitor_5min_button" class="add_button" style="position:absolute; right:30%; top:1%;">5</div>
+  </div>
 
-    <div id="rem_visitor_penalty_0_button" class="rem_button" style="position:absolute; right:2%; top: 22%;">-</div> 
-    <div id="visitor_penalty_0_time" class="penalty_time_text" style="position:absolute; right:10%; top: 22%;"></div>
+  <div id="bottom_penalty_portion" style="width: 90%  margin-left:5%; height: 42%; overflow:hidden; position:relative;">
 
-    <div id="rem_visitor_penalty_1_button" class="rem_button" style="position:absolute; right:2%; top: 42%;">-</div> 
-    <div id="visitor_penalty_1_time" class="penalty_time_text" style="position:absolute; right:10%; top: 42%;"></div>
+    <div id="rem_home_penalty_0_button" class="rem_button" style="position:absolute; left:2%; top: 4%;">x</div> 
+    <div id="home_penalty_0_time" class="penalty_time_text" style="position:absolute; left:8%; top: 2%;"></div>
 
-    <div id="rem_visitor_penalty_2_button" class="rem_button" style="position:absolute; right:2%; top: 62%;">-</div> 
-    <div id="visitor_penalty_2_time" class="penalty_time_text" style="position:absolute; right:10%; top: 62%;"></div>
+    <div id="rem_home_penalty_1_button" class="rem_button" style="position:absolute; left:2%; top: 24%;">x</div> 
+    <div id="home_penalty_1_time" class="penalty_time_text" style="position:absolute; left:8%; top: 22%;"></div>
 
-    <div id="rem_visitor_penalty_3_button" class="rem_button" style="position:absolute; right:2%; top: 82%;">-</div> 
-    <div id="visitor_penalty_3_time" class="penalty_time_text" style="position:absolute; right:10%; top: 82%;"></div>
+    <div id="rem_home_penalty_2_button" class="rem_button" style="position:absolute; left:2%; top: 44%;">x</div> 
+    <div id="home_penalty_2_time" class="penalty_time_text" style="position:absolute; left:8%; top: 42%;"></div>
 
-    <div id="rem_visitor_penalty_4_button" class="rem_button" style="position:absolute; right:2%; top: 102%;">-</div> 
-    <div id="visitor_penalty_4_time" class="penalty_time_text" style="position:absolute; right:10%; top: 102%;"></div>
+    <div id="rem_home_penalty_3_button" class="rem_button" style="position:absolute; left:2%; top: 64%;">x</div> 
+    <div id="home_penalty_3_time" class="penalty_time_text" style="position:absolute; left:8%; top: 62%;"></div>
 
-    <div id="master_button" class="master_button" style="position: absolute; top: 2%;margin-left:38%;margin-right:38%;left:0;right:0;">START</div>
+    <div id="rem_visitor_penalty_0_button" class="rem_button" style="position:absolute; right:2%; top: 4%;">x</div> 
+    <div id="visitor_penalty_0_time" class="penalty_time_text" style="position:absolute; right:8%; top: 2%;"></div>
+
+    <div id="rem_visitor_penalty_1_button" class="rem_button" style="position:absolute; right:2%; top: 24%;">x</div> 
+    <div id="visitor_penalty_1_time" class="penalty_time_text" style="position:absolute; right:8%; top: 22%;"></div>
+
+    <div id="rem_visitor_penalty_2_button" class="rem_button" style="position:absolute; right:2%; top: 44%;">x</div> 
+    <div id="visitor_penalty_2_time" class="penalty_time_text" style="position:absolute; right:8%; top: 42%;"></div>
+
+    <div id="rem_visitor_penalty_3_button" class="rem_button" style="position:absolute; right:2%; top: 64%;">x</div> 
+    <div id="visitor_penalty_3_time" class="penalty_time_text" style="position:absolute; right:8%; top: 62%;"></div>
 
   </div>
+
 </body>
 </html>
