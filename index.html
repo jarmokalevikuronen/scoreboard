@@ -418,16 +418,16 @@
         if (game.state === GAMESTATE_INTERMISSION_1 && game.def.special_cycling_for_juhis === true) {
             return "PELITAUKO";	
         }
-/*      switch (str) {
-        case GAMESTATE_PERIOD_1:          return "1. ERÄ";
-        case GAMESTATE_PERIOD_2:          return "2. ERÄ";
-        case GAMESTATE_PERIOD_3:          return "3. ERÄ";
-        case GAMESTATE_INTERMISSION_1:    return "1. ERÄTAUKO";
-        case GAMESTATE_INTERMISSION_2:    return "2. ERÄTAUKO";
-        case GAMESTATE_FINISHED:          return "PELI PÄÄTTYNYT";
-        case GAMESTATE_TIMEOUT_VISITOR:   return "AIKALISÄ VIERAS";
-        case GAMESTATE_TIMEOUT_HOME:      return "AIKALISÄ KOTI";      
-      }*/
+      switch (game.state) {
+        case GAMESTATE_PERIOD_1:          return "1. ER\u00C4";
+        case GAMESTATE_PERIOD_2:          return "2. ER\u00C4";
+        case GAMESTATE_PERIOD_3:          return "3. ER\u00C4";
+        case GAMESTATE_INTERMISSION_1:    return "1. ER\u00C4TAUKO";
+        case GAMESTATE_INTERMISSION_2:    return "2. ER\u00C4TAUKO";
+        case GAMESTATE_FINISHED:          return "PELI P\u00C4\u00C4TTYNYT";
+        case GAMESTATE_TIMEOUT_VISITOR:   return "AIKALIS\u00C4 VIERAS";
+        case GAMESTATE_TIMEOUT_HOME:      return "AIKALIS\u00C4 KOTI";      
+      }
 
       return game.state;
     }
@@ -473,6 +473,7 @@
         return clsName + displayModePostfix() + controlModePostfix();
     }
 
+    var GAMESTATE_NOTSELECTED        =    "VALITSE PELITYYPPI"
     var GAMESTATE_NOTSTARTED		=	"PELI EI OLE ALKANUT"
     var GAMESTATE_PERIOD_1		=	"1. ERA"
     var GAMESTATE_INTERMISSION_1	=	"1. ERATAUKO"
@@ -506,7 +507,11 @@
 
         var state_title = document.getElementById("title_phase");
         if (state_title !== null) {
-            state_title.textContent = fixStateString(game);
+            var states = fixStateString(game);
+            if (game.effective_playing_time_active === true && game.state !== GAMESTATE_FINISHED) {
+                states += " (TEHOKAS)";
+            }
+            state_title.textContent = states;
         }
 
 
@@ -686,6 +691,10 @@
                 hide('add_home_5min_button');
                 hide('add_visitor_2min_button');
                 hide('add_visitor_5min_button');
+
+                hide('visitor_timeout_button');
+                hide('home_timeout_button');
+
             break;
 
             case GAMESTATE_INTERMISSION_1:
@@ -710,6 +719,7 @@
             break;
 
             case GAMESTATE_NOTSTARTED:
+                show('master_button');
                 hide('add_homegoal_button');
                 hide('add_visitorgoal_button');
                 hide('rem_homegoal_button');
@@ -729,6 +739,29 @@
                 hide('home_timeout_button');
 
             break;
+
+            case GAMESTATE_NOTSELECTED:
+                hide('master_button');
+                hide('add_homegoal_button');
+                hide('add_visitorgoal_button');
+                hide('rem_homegoal_button');
+                hide('rem_visitorgoal_button');
+
+                hide('add_minute_button');
+                hide('add_second_button');
+                hide('rem_minute_button');
+                hide('rem_second_button');
+
+		hide('add_home_2min_button');
+                hide('add_home_5min_button');
+                hide('add_visitor_2min_button');
+                hide('add_visitor_5min_button');
+
+                hide('visitor_timeout_button');
+                hide('home_timeout_button');
+
+            break;
+
         }
 
     }

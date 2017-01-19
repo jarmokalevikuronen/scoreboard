@@ -37,6 +37,7 @@ function GameDef_C1SM() {
     this.overtime_enabled = true;
     this.overtime_length_minutes = 5;
     this.special_cycling_for_juhis = false;
+    this.effective_playing_time_last_three_of_third = false;
 }
 
 function GameDef_EJUN() {
@@ -47,6 +48,7 @@ function GameDef_EJUN() {
     this.overtime_enabled = false;
     this.overtime_length_minutes = 0;
     this.special_cycling_for_juhis = false;
+    this.effective_playing_time_last_three_of_third = true;
 }
 
 function GameDef_TEST() {
@@ -57,6 +59,7 @@ function GameDef_TEST() {
     this.overtime_enabled = false;
     this.overtime_length_minutes = 0;
     this.special_cycling_for_juhis = true;
+    this.effective_playing_time_last_three_of_third = false;
 }
 
 
@@ -94,11 +97,12 @@ Penalty.prototype.forwardTime = function(ms) {
 }
 
 
-var game = new Game(new GameDef_C1SM());
+//var game = new Game(new GameDef_C1SM());
 
 
 var penaltycounter = 0;
 
+var GAMESTATE_NOTSELECTED    =    "VALITSE PELITYYPPI"
 var GAMESTATE_NOTSTARTED	=	"PELI EI OLE ALKANUT"
 var GAMESTATE_PERIOD_1		=	"1. ERA"
 var GAMESTATE_INTERMISSION_1	=	"1. ERATAUKO"
@@ -113,6 +117,7 @@ var GAMESTATE_GAMEPAUSE         =       "PELITAUKO"
 
 function Game(def) {
     this.def = def;
+    this.effective_playing_time_active = false;
     this.current_period = 1;
     this.state = GAMESTATE_NOTSTARTED;
     this.returnstate = ""; // Return to this state for example after timeout has finished. woohaa.
@@ -277,6 +282,13 @@ Game.prototype.startPeriod = function(name) {
         this.periodelapsed_ms = 0;
         this.periodelapsed_minutes = 0;
         this.periodelapsed_seconds = 0;
+        if (name === GAMESTATE_PERIOD_1) {
+            this.current_period = 1;
+        } else if (name === GAMESTATE_PERIOD_2) {
+            this.current_period = 2;
+        } else if (name === GAMESTATE_PERIOD_3) { 
+            this.current_period = 3;
+        }
         timetracker.start();
     } 
 }
@@ -309,6 +321,17 @@ Game.prototype.forwardTime = function(milliseconds, cb, force) {
     }
     if (this.periodelapsed_ms < 0) {
         this.periodelapsed_ms = 0;
+    }
+    this.effective_playing_time_last_three_of_third = true;
+    this.effective_playing_time_active = false;
+
+    if (this.def.effective_playing_time_last_three_of_third === true) {
+        if (this.current_period === 3) {
+            if ((this.periodlength_ms - this.periodelapsed_ms) < (3 * 60 * 1000)) {
+                // Last three minutes of a last period
+               this.effective_playing_time_active = true;
+            }
+        }
     }
 
     this.periodelapsed_seconds = parseInt(this.periodelapsed_ms / 1000 + 0.0001) % 60;
@@ -490,7 +513,8 @@ Game.prototype.startOvertime = function() {
 }
  
 
-var theGAME = new Game(new GameDef_TEST());
+var theGAME = new Game(new GameDef_EJUN());
+theGAME.state = GAMESTATE_NOTSELECTED;
 var timetracker = new TimeTrack();
 var timetrackertimeout = new TimeTrack();
 var timetrackerintermission = new TimeTrack();
